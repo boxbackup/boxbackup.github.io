@@ -1,0 +1,128 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>bbackupctl</title><link rel="stylesheet" href="../bbdoc-man.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.73.2"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="header"><div id="logo"><img src="../images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle"><img src="../images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle"></div></div><div class="refentry" lang="en"><a name="idp150618192"></a><div class="titlepage"></div>
+  
+
+  <div class="refnamediv"><h2>Name</h2><p>
+    bbackupctl
+
+     &#8212; Control the Box Backup client daemon
+  </p></div>
+
+  <div class="refsynopsisdiv"><h2>Synopsis</h2>
+    <div class="cmdsynopsis"><p>
+      <code class="command">bbackupctl</code> 
+
+       [-q]
+
+       [-c config-file]
+
+        command 
+    </p></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58063568"></a><h2>Description</h2>
+    
+
+    <p><span class="command"><strong>bbackupctl</strong></span> sends commands to a running
+    <span class="command"><strong>bbackupd</strong></span> daemon on a client machine. It can be used to
+    force an immediate backup, tell the daemon to reload its configuration
+    files or stop the daemon. If <span class="command"><strong>bbackupd</strong></span> is configured in
+    snapshot mode, it will not back up automatically, and the
+    <span class="command"><strong>bbackupctl</strong></span> must be used to tell it when to start a
+    backup.</p>
+
+    <p>Communication with the bbackupd daemon takes place over a local
+    socket (not over the network). Some platforms (notably Windows) can't
+    determine if the user connecting on this socket has the correct
+    credentials to execute the commands. On these platforms, ANY local user
+    can interfere with bbackupd. To avoid this, remove the CommandSocket
+    option from bbackupd.conf, which will also disable bbackupctl. See the
+    Client Configuration page for more information.</p>
+
+    <p><span class="command"><strong>bbackupctl</strong></span> needs to read the
+    <span class="command"><strong>bbackupd</strong></span> configuration file to find out the name of the
+    CommandSocket. If you have to tell <span class="command"><strong>bbackupd</strong></span> where to
+    find the configuration file, you will have to tell
+    <span class="command"><strong>bbackupctl</strong></span> as well. The default on Unix systems is
+    usually <code class="filename">/etc/box/bbackupd.conf</code>. On Windows systems,
+    it is <code class="filename">bbackupd.conf</code> in the same directory where
+    <span class="command"><strong>bbackupd.exe</strong></span> is located. If
+    <span class="command"><strong>bbackupctl</strong></span> cannot find or read the configuration file,
+    it will log an error message and exit.</p>
+
+    <p><span class="command"><strong>bbackupctl</strong></span> usually writes error messages to the
+    console and the system logs. If it is not doing what you expect, please
+    check these outputs first of all.</p>
+
+    <div class="variablelist"><dl><dt><span class="term"><code class="option">-q</code></span></dt><dd>
+          <p>Run in quiet mode.</p>
+        </dd><dt><span class="term"><code class="option">-c</code> config-file</span></dt><dd>
+          <p>Specify configuration file.</p>
+        </dd></dl></div>
+
+    <div class="refsection" lang="en"><a name="idp58074320"></a><h3>Commands</h3>
+      
+
+      <p>The following commands are available in bbackupctl:</p>
+
+      <div class="variablelist"><dl><dt><span class="term"><span class="command"><strong>terminate</strong></span></span></dt><dd>
+            <p>This command cleanly shuts down <span class="command"><strong>bbackupd</strong></span>.
+            This is better than killing or terminating it any other
+            way.</p>
+          </dd><dt><span class="term"><span class="command"><strong>reload</strong></span></span></dt><dd>
+            <p>Causes the <span class="command"><strong>bbackupd</strong></span> daemon to re-read all
+            its configuration files. Equivalent to <span class="command"><strong>kill
+            -HUP</strong></span>.</p>
+          </dd><dt><span class="term"><span class="command"><strong>sync</strong></span></span></dt><dd>
+            <p>Initiates a backup. If no files need to be backed up, no
+            connection will be made to the server.</p>
+          </dd><dt><span class="term"><span class="command"><strong>force-sync</strong></span></span></dt><dd>
+            <p>Initiates a backup, even if the
+            <code class="varname">SyncAllowScript</code> says that no backup should run
+            now.</p>
+          </dd><dt><span class="term"><span class="command"><strong>wait-for-sync</strong></span></span></dt><dd>
+            <p>Passively waits until the next backup starts of its own
+            accord, and then terminates.</p>
+          </dd><dt><span class="term"><span class="command"><strong>wait-for-end</strong></span></span></dt><dd>
+            <p>Passively waits until the next backup starts of its own
+            accord and finishes, and then terminates.</p>
+          </dd><dt><span class="term"><span class="command"><strong>sync-and-wait</strong></span></span></dt><dd>
+            <p>Initiates a backup, waits for it to finish, and then
+            terminates.</p>
+          </dd></dl></div>
+    </div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58097616"></a><h2>Files</h2>
+    
+
+    <p><code class="filename">/etc/box/bbackupd.conf</code></p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58098896"></a><h2>See Also</h2>
+    
+
+    <p><span class="citerefentry">
+        <span class="refentrytitle">bbackupd.conf</span>
+
+        (5)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">bbackupd-config</span>
+
+        (8)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">bbackupctl</span>
+
+        (8)
+      </span></p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58103376"></a><h2>Authors</h2>
+    
+
+    <p><span class="author">Ben Summers</span></p>
+
+    <p><span class="author">Per Thomsen</span></p>
+
+    <p><span class="author">James O'Gorman</span></p>
+  </div>
+</div></body></html>

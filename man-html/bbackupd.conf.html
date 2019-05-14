@@ -1,0 +1,215 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>bbackupd.conf</title><link rel="stylesheet" href="../bbdoc-man.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.73.2"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="header"><div id="logo"><img src="../images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle"><img src="../images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle"></div></div><div class="refentry" lang="en"><a name="idp150683344"></a><div class="titlepage"></div>
+  
+
+  <div class="refnamediv"><h2>Name</h2><p>
+    bbackupd.conf
+
+     &#8212; Box Backup client daemon configuration file
+  </p></div>
+
+  <div class="refsynopsisdiv"><h2>Synopsis</h2>
+    <div class="cmdsynopsis"><p>
+      <code class="command">/etc/box/bbackupd.conf</code> 
+    </p></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp57934928"></a><h2>Description</h2>
+    
+
+    <div class="variablelist"><dl><dt><span class="term"><code class="varname">AccountNumber</code></span></dt><dd>
+          <p>The account number of this client. This is set by the admin of
+          the store server.</p>
+        </dd><dt><span class="term"><code class="varname">UpdateStoreInterval</code></span></dt><dd>
+          <p>Specifies the interval between scanning of the local discs. To
+          avoid cycles of load on the server, this time is randomly adjusted
+          by a small percentage as the daemon runs. Defaults to 1 hour.</p>
+        </dd><dt><span class="term"><code class="varname">MinimumFileAge</code></span></dt><dd>
+          <p>Specifies how long since a file was last modified before it
+          will be uploaded. Defaults to 6 hours.</p>
+        </dd><dt><span class="term"><code class="varname">MaxUploadWait</code></span></dt><dd>
+          <p>If a file is repeatedly modified it won't be uploaded
+          immediately in case it's modified again. However it should be
+          uploaded eventually. This is how long we should wait after first
+          noticing a change. Defaults to 1 day.</p>
+        </dd><dt><span class="term"><code class="varname">MaxFileTimeInFuture</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><code class="varname">AutomaticBackup</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><code class="varname">SyncAllowScript</code></span></dt><dd>
+          <p>Use this to temporarily stop bbackupd from syncronising or
+          connecting to the store. This specifies a program or script script
+          which is run just before each sync, and ideally the full path to the
+          interpreter. It will be run as the same user bbackupd is running as,
+          usually root.</p>
+
+          <p>The script prints either "now" or a number to STDOUT (and a
+          terminating newline, no quotes). If the result was "now", then the
+          sync will happen. If it's a number, then the script will be asked
+          again in that number of seconds.</p>
+
+          <p>For example, you could use this on a laptop to only backup
+          when on a specific network. </p>
+        </dd><dt><span class="term"><code class="varname">MaximumDiffingTime</code></span></dt><dd>
+          <p>How much time should be spent on diffing files.</p>
+        </dd><dt><span class="term"><code class="varname">DeleteRedundantLocationsAfter</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><code class="varname">FileTrackingSizeThreshold</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><code class="varname">DiffingUploadSizeThreshold</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><code class="varname">StoreHostname</code></span></dt><dd>
+          <p>The hostname or IP address of the <span class="citerefentry">
+              <span class="refentrytitle">bbstored</span>
+
+              (8)
+            </span> server.</p>
+        </dd><dt><span class="term"><code class="varname">StorePort</code></span></dt><dd>
+          <p>The port used by the server. Defaults to 2201.</p>
+        </dd><dt><span class="term"><code class="varname">ExtendedLogging</code></span></dt><dd>
+          <p>Logs everything that happens between the client and server.
+          The <span class="citerefentry">
+              <span class="refentrytitle">bbackupd</span>
+
+              (8)
+            </span> client must also be started with
+          <code class="option">-V</code>.</p>
+        </dd><dt><span class="term"><code class="varname">ExtendedLogFile</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><code class="varname">LogAllFileAccess</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><code class="varname">LogFile</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><code class="varname">LogFileLevel</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><code class="varname">CommandSocket</code></span></dt><dd>
+          <p>Where the command socket is created in the filesystem.</p>
+        </dd><dt><span class="term"><code class="varname">KeepAliveTime</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><code class="varname">StoreObjectInfoFile</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><code class="varname">NotifyScript</code></span></dt><dd>
+          <p>The location of the script which runs at certain events. This
+          script is generated by <span class="citerefentry">
+              <span class="refentrytitle">bbackupd-config</span>
+
+              (8)
+            </span>. Defaults to
+          <code class="filename">/etc/box/bbackupd/NotifySysAdmin.sh</code>.</p>
+        </dd><dt><span class="term"><code class="varname">NotifyAlways</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><code class="varname">CertificateFile</code></span></dt><dd>
+          <p>The path to the client's public certificate.</p>
+        </dd><dt><span class="term"><code class="varname">PrivateKeyFile</code></span></dt><dd>
+          <p>The path to the client's private key. This should only be
+          readable by root.</p>
+        </dd><dt><span class="term"><code class="varname">TrustedCAsFile</code></span></dt><dd>
+          <p>The Certificate Authority created by <span class="citerefentry">
+              <span class="refentrytitle">bbstored-certs</span>
+
+              (8)
+            </span>.</p>
+        </dd><dt><span class="term"><code class="varname">KeysFile</code></span></dt><dd>
+          <p>The data encryption key. This <span class="bold"><strong>must</strong></span> be kept safe at all costs, your data is
+          useless without it!</p>
+        </dd><dt><span class="term"><code class="varname">DataDirectory</code></span></dt><dd>
+          <p>A directory to keep temporary state files. This is usually
+          something like <code class="filename">/var/bbackupd</code>.</p>
+        </dd><dt><span class="term"><code class="varname">Server</code></span></dt><dd>
+          <p>This section relates to the running daemon.</p>
+
+          <div class="variablelist"><dl><dt><span class="term"><code class="varname">PidFile</code></span></dt><dd>
+                  <p>The location of the process ID file. Defaults to
+                  <code class="filename">/var/run/bbackupd.pid</code>.</p>
+                </dd></dl></div>
+        </dd><dt><span class="term"><code class="varname">BackupLocations</code></span></dt><dd>
+          <p>This section defines each directory to be backed up. Each
+          entry must have at least a Path entry and, optionally, include and
+          exclude directives.</p>
+
+          <p>Multiple include and exclude directives may appear.</p>
+
+          <div class="variablelist"><dl><dt><span class="term"><code class="varname">Path</code></span></dt><dd>
+                  <p>The path to back up.</p>
+                </dd><dt><span class="term"><code class="varname">ExcludeFile</code></span></dt><dd>
+                  <p>Exclude a single file.</p>
+                </dd><dt><span class="term"><code class="varname">ExcludeFilesRegex</code></span></dt><dd>
+                  <p>Exclude multiple files based on a regular expression.
+                  See <span class="citerefentry">
+                      <span class="refentrytitle">re_format</span>
+
+                      (7)
+                    </span>.</p>
+                </dd><dt><span class="term"><code class="varname">ExcludeDir</code></span></dt><dd>
+                  <p>Exclude a single directory.</p>
+                </dd><dt><span class="term"><code class="varname">ExcludeDirsRegex</code></span></dt><dd>
+                  <p>Exclude multiple directories based on a regular
+                  expression. See <span class="citerefentry">
+                      <span class="refentrytitle">re_format</span>
+
+                      (7)
+                    </span>.</p>
+                </dd><dt><span class="term"><code class="varname">AlwaysIncludeFile</code></span></dt><dd>
+                  <p>Include a single file from a directory which has been
+                  excluded.</p>
+                </dd><dt><span class="term"><code class="varname">AlwaysIncludeFilesRegex</code></span></dt><dd>
+                  <p>Include multiple files from an excluded directory,
+                  based on a regular expression.</p>
+                </dd><dt><span class="term"><code class="varname">AlwaysIncludeDir</code></span></dt><dd>
+                  <p>Include a single directory from a directory which has
+                  been excluded.</p>
+                </dd><dt><span class="term"><code class="varname">AlwaysIncludeDirsRegex</code></span></dt><dd>
+                  <p>Include multiple directories from an excluded
+                  directory, based on a regular expression.</p>
+                </dd></dl></div>
+        </dd></dl></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp150607696"></a><h2>Examples</h2>
+    
+
+    <p>The following is an example of a backup location:</p>
+
+    <pre class="programlisting">home
+{
+   Path = /home
+   ExcludeDir = /home/guest
+   ExcludeDir = /home/[^/]+/tmp
+   ExcludeFilesRegex = .*\.(mp3|MP3)$
+   AlwaysIncludeFile = /home/someuser/importantspeech.mp3
+}</pre>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp150609232"></a><h2>Files</h2>
+    
+
+    <p><code class="filename">/etc/box/bbackupd.conf</code></p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp150610512"></a><h2>See Also</h2>
+    
+
+    <p><span class="citerefentry">
+        <span class="refentrytitle">bbackupd</span>
+
+        (8)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">bbackupd-config</span>
+
+        (8)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">bbackupctl</span>
+
+        (8)
+      </span></p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp150614992"></a><h2>Authors</h2>
+    
+
+    <p><span class="author">Ben Summers</span></p>
+
+    <p><span class="author">Per Thomsen</span></p>
+
+    <p><span class="author">James O'Gorman</span></p>
+  </div>
+</div></body></html>

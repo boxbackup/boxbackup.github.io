@@ -1,0 +1,132 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>bbackupd</title><link rel="stylesheet" href="../bbdoc-man.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.73.2"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="header"><div id="logo"><img src="../images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle"><img src="../images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle"></div></div><div class="refentry" lang="en"><a name="idp58066768"></a><div class="titlepage"></div>
+  
+
+  <div class="refnamediv"><h2>Name</h2><p>
+    bbackupd
+
+     &#8212; Box Backup client daemon
+  </p></div>
+
+  <div class="refsynopsisdiv"><h2>Synopsis</h2>
+    <div class="cmdsynopsis"><p>
+      <code class="command">bbackupd</code> 
+
+       [-DFkqvVT]
+
+       [-c config-file]
+
+       [-t tag]
+    </p></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58073296"></a><h2>Description</h2>
+    
+
+    <p><span class="command"><strong>bbackupd</strong></span> runs on client computers in the
+    background, finding new files to back up. When it is time for a backup,
+    <span class="command"><strong>bbackupd</strong></span> will connect to the server
+    (<span class="command"><strong>bbstored</strong></span>) to upload the files.</p>
+
+    <p>A running <span class="command"><strong>bbackupd</strong></span> daemon can be controlled with
+    the <span class="command"><strong>bbackupctl</strong></span> command, to make it shut down, reload
+    its configuration, or start an immediate backup.</p>
+
+    <p><span class="command"><strong>bbackupd</strong></span> needs to be configured to tell it which
+    files to back up, how often, and to which server (running
+    <span class="command"><strong>bbstored</strong></span>). See the Client Configuration page for more
+    information. For this, you must write a configuration file. You must
+    either place it in the default location, or tell
+    <span class="command"><strong>bbackupd</strong></span> where to find it.</p>
+
+    <p>You can check the default location with the <code class="option">-h</code>
+    option. The default on Unix systems is usually
+    <code class="filename">/etc/box/bbackupd.conf</code>. On Windows systems, it is
+    <code class="filename">bbackupd.conf</code> in the same directory where
+    <span class="command"><strong>bbackupd.exe</strong></span> is located. If bbackupd cannot find or
+    read the configuration file, it will log an error message and exit.</p>
+
+    <p><span class="command"><strong>bbackupd</strong></span> usually writes log messages to the
+    system logs, using the facility <code class="function">local5</code>, which you can
+    use to filter them to send them to a separate file. It can also write them
+    to the console, see options below. If <span class="command"><strong>bbackupd</strong></span> is not
+    doing what you expect, please check the logs first of all.</p>
+
+    <div class="refsection" lang="en"><a name="idp58114256"></a><h3>Options</h3>
+      
+
+      <div class="variablelist"><dl><dt><span class="term"><code class="option">-c</code> config-file</span></dt><dd>
+            <p>Use the specified configuration file. If <code class="option">-c</code>
+            is omitted, the last argument is the configuration file. If none
+            is specified, the default is used (see above).</p>
+          </dd><dt><span class="term"><code class="option">-D</code></span></dt><dd>
+            <p>Debugging mode. Do not fork into the background (do not run
+            as a daemon). Not available on Windows.</p>
+          </dd><dt><span class="term"><code class="option">-F</code></span></dt><dd>
+            <p>No-fork mode. Same as <code class="option">-D</code> for bbackupd. Not
+            available on Windows.</p>
+          </dd><dt><span class="term"><code class="option">-k</code></span></dt><dd>
+            <p>Keep console open after fork, keep writing log messages to
+            it. Not available on Windows.</p>
+          </dd><dt><span class="term"><code class="option">-q</code></span></dt><dd>
+            <p>Run more quietly. Reduce verbosity level by one. Available
+            levels are <code class="varname">NOTHING</code>, <code class="varname">FATAL</code>,
+            <code class="varname">ERROR</code>, <code class="varname">WARNING</code>,
+            <code class="varname">NOTICE</code>, <code class="varname">INFO</code>,
+            <code class="varname">TRACE</code>, <code class="varname">EVERYTHING</code>. Default
+            level is <code class="varname">NOTICE</code> in non-debugging builds. Use
+            once to drop to <code class="varname">WARNING</code> level, twice for
+            <code class="varname">ERROR</code> level, four times for no logging at
+            all.</p>
+          </dd><dt><span class="term">-v</span></dt><dd>
+            <p>Run more verbosely. Increase verbosity level by one. Use
+            once to raise to <code class="varname">INFO</code> level, twice for
+            <code class="varname">TRACE</code> level, three times for
+            <code class="varname">EVERYTHING</code> (currently the same as
+            <code class="varname">TRACE</code>).</p>
+          </dd><dt><span class="term"><code class="option">-V</code></span></dt><dd>
+            <p>Run at maximum verbosity (<code class="varname">EVERYTHING</code>
+            level).</p>
+          </dd><dt><span class="term"><code class="option">-t</code> tag</span></dt><dd>
+            <p>Tag each console message with specified marker. Mainly
+            useful in testing when running multiple daemons on the same
+            console.</p>
+          </dd><dt><span class="term"><code class="option">-T</code></span></dt><dd>
+            <p>Timestamp each line of console output.</p>
+          </dd></dl></div>
+    </div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58158416"></a><h2>Files</h2>
+    
+
+    <p><code class="filename">/etc/box/bbackupd.conf</code></p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58159824"></a><h2>See Also</h2>
+    
+
+    <p><span class="citerefentry">
+        <span class="refentrytitle">bbackupd.conf</span>
+
+        (5)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">bbackupd-config</span>
+
+        (8)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">bbackupctl</span>
+
+        (8)
+      </span></p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58164176"></a><h2>Authors</h2>
+    
+
+    <p><span class="author">Ben Summers</span></p>
+
+    <p><span class="author">Per Thomsen</span></p>
+
+    <p><span class="author">James O'Gorman</span></p>
+  </div>
+</div></body></html>

@@ -1,0 +1,52 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 2. Building and installing</title><link rel="stylesheet" type="text/css" href="../bbdoc.css"><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"><link rel="home" href="index.html" title="Box Backup Build and Installation Guide"><link rel="up" href="index.html" title="Box Backup Build and Installation Guide"><link rel="prev" href="ch01.html" title="Chapter 1. Introduction"><link rel="next" href="apa.html" title="Appendix A. Box Backup and SSL"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="header"><div id="logo"><img src="../images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle"><img src="../images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle"></div></div><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 2. Building and installing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch01.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="apa.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="idp62050128"></a>Chapter 2. Building and installing</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="section"><a href="ch02.html#idp62050896">Before you start</a></span></dt><dt><span class="section"><a href="ch02.html#idp62052048">Box Backup compile</a></span></dt><dt><span class="section"><a href="ch02.html#idp62071760">Local installation</a></span></dt><dt><span class="section"><a href="ch02.html#idp62074320">Remote installation</a></span></dt><dt><span class="section"><a href="ch02.html#idp62076496">Configure options</a></span></dt><dt><span class="section"><a href="ch02.html#idp62087504">Tests</a></span></dt></dl></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp62050896"></a>Before you start</h2></div></div></div><p>Firstly, check that all the clocks on your clients, servers and
+      signing machines are accurate and in sync. A disagreement in time
+      between a client and a server is the biggest cause of installation
+      difficulties, as the times in the generated certificates will cause
+      login failures if the start date is in the future.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp62052048"></a>Box Backup compile</h2></div></div></div><p>In the following instructions, replace 0.00 with the actual
+      version number of the archive you have downloaded.</p><p>For help building on Windows, see the <a class="link" href="apb.html#AppB">Windows
+      Compile Appendix</a>. And if you want to build a Linux RPM, <a class="link" href="apc.html#AppC">look here</a>.</p><p>You need the latest version of OpenSSL, as some of the extra APIs
+      it provides are required. You should have this anyway, as earlier
+      versions have security flaws. (If you have an earlier version installed,
+      the configuration script will give you instructions on enabling
+      experimental support for older versions.)</p><p>See <a class="link" href="apa.html#AppA">OpenSSL notes</a> for more information
+      on OpenSSL issues.</p><p>There are some notes in the archive about compiling on various
+      platforms within the boxbackup-0.00 directory -- read them first. For
+      example, if you are compiling under Linux, look for LINUX.txt as
+      boxbackup-0.00/LINUX.txt after untaring the archive.</p><p>Download the archive, then in that directory type</p><pre class="programlisting">tar xvzf boxbackup-0.00.tgz
+cd boxbackup-0.00
+./configure
+make</pre><p>The server and client will be built and packaged up for
+      installation on this machine, or ready to be transferred as tar files to
+      another machine for installation.</p><p>This builds two parcels of binaries and scripts, 'backup-client'
+      and 'backup-server'. The generated installation scripts assumes you want
+      everything installed in <span class="bold"><strong>/usr/local/bin</strong></span></p><p>Optionally, type <span class="bold"><strong>make test</strong></span> to run
+      all the tests.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp62071760"></a>Local installation</h2></div></div></div><p>Type <span class="bold"><strong>make install-backup-client</strong></span>
+      to install the backup client.</p><p>Type <span class="bold"><strong>make install-backup-server</strong></span>
+      to install the backup server.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp62074320"></a>Remote installation</h2></div></div></div><p>In the parcels directory, there are tar files for each parcel. The
+      name reflects the version and platform you have built it for.</p><p>Transfer this tar file to the remote server, and unpack it, then
+      run the install script. For example:</p><pre class="programlisting">tar xvzf boxbackup-0.00-backup-server-OpenBSD.tgz
+cd boxbackup-0.00-backup-server-OpenBSD
+./install-backup-server</pre></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp62076496"></a>Configure options</h2></div></div></div><p>You can use arguments to the configure script to adjust the
+      compile and link lines in the generated Makefiles, should this be
+      necessary for your platform. The configure script takes the usual GNU
+      autoconf arguments, a full list of which can be obtained with <span class="bold"><strong>--help</strong></span>. Additional options for Box Backup
+      include:</p><div class="informaltable"><table border="1"><colgroup><col><col></colgroup><tbody><tr><td char="-">--enable-gnu-readline</td><td>Use GNU readline if present. Linking Box Backup against
+              GNU readline may create licence implications if you then
+              distribute the binaries. libeditline is also supported as a safe
+              alternative, and is used by default if available.</td></tr><tr><td>--disable-largefile</td><td>Omit support for large files</td></tr><tr><td>--with-bdb-lib=DIR</td><td>Specify Berkeley DB library location</td></tr><tr><td>--with-bdb-headers=DIR</td><td>Specify Berkeley DB headers location</td></tr><tr><td>--with-random=FILE</td><td>Use FILE as random number seed (normally
+              auto-detected)</td></tr><tr><td>--with-tmp-dir=DIR</td><td>Directory for temporary files (normally /tmp)</td></tr></tbody></table></div><p>See <a class="link" href="apa.html#AppA">OpenSSL notes</a> for the OpenSSL
+      specific options.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp62087504"></a>Tests</h2></div></div></div><p>There are a number of unit tests provided. To compile and run one
+      type:</p><pre class="programlisting">./runtest.pl bbackupd release
+./runtest.pl common debug
+./runtest.pl ALL</pre><p>The runtest.pl script will compile and run the test. The first
+      argument is the test name, and the second the type of build. Use ALL as
+      a test name to run all the tests.</p><p>The output from the tests is slightly muddled using this script.
+      If you're developing, porting or trying out new things, it might be
+      better to use the following scheme:</p><pre class="programlisting">cd test/bbackupd
+make
+cd ../../debug/test/bbackupd
+./t</pre><p>or in release mode...</p><pre class="programlisting">cd test/bbackupd
+make -D RELEASE
+cd ../../release/test/bbackupd
+./t</pre><p>(use RELEASE=1 with GNU make)</p><p>I tend to use two windows, one for compilation, and one for
+      running tests.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch01.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="apa.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 1. Introduction </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Appendix A. Box Backup and SSL</td></tr></table></div></body></html>

@@ -1,0 +1,122 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>bbstored.conf</title><link rel="stylesheet" href="../bbdoc-man.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.73.2"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="header"><div id="logo"><img src="../images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle"><img src="../images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle"></div></div><div class="refentry" lang="en"><a name="idp150622800"></a><div class="titlepage"></div>
+  
+
+  <div class="refnamediv"><h2>Name</h2><p>
+    bbstored.conf
+
+     &#8212; Box Backup store daemon configuration file
+  </p></div>
+
+  <div class="refsynopsisdiv"><h2>Synopsis</h2>
+    <div class="cmdsynopsis"><p>
+      <code class="command">/etc/box/bbstored.conf</code> 
+    </p></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58132432"></a><h2>Description</h2>
+    
+
+    <p>The following configuration options are valid:</p>
+
+    <div class="variablelist"><dl><dt><span class="term"><code class="varname">RaidFileConf</code></span></dt><dd>
+          <p>Specifies the path to the <span class="citerefentry">
+              <span class="refentrytitle">raidfile.conf</span>
+
+              (5)
+            </span>. This is normally
+          <code class="filename">/etc/box/raidfile.conf</code>.</p>
+        </dd><dt><span class="term"><code class="varname">AccountDatabase</code></span></dt><dd>
+          <p>Specifies the path to the account database created by
+          <span class="citerefentry">
+              <span class="refentrytitle">bbstoreaccounts</span>
+
+              (8)
+            </span>. This is usually
+          <code class="filename">/etc/box/bbstored/accounts.txt</code>.</p>
+        </dd><dt><span class="term"><code class="varname">ExtendedLogging</code></span></dt><dd>
+          <p>Specifies whether extended logging should be enabled to show
+          what commands are being received from clients.</p>
+        </dd><dt><span class="term"><code class="varname">TimeBetweenHousekeeping</code></span></dt><dd>
+          <p>How long between scanning for files which need
+          deleting.</p>
+        </dd><dt><span class="term"><code class="varname">Server</code></span></dt><dd>
+          <p>These options relate to the actual daemon.</p><div class="variablelist"><dl><dt><span class="term"><code class="varname">PidFile</code></span></dt><dd>
+                  <p>The location of the pidfile, where the daemon's
+                  process ID is kept.</p>
+                </dd><dt><span class="term"><code class="varname">User</code></span></dt><dd>
+                  <p>The user to run as.</p>
+                </dd><dt><span class="term"><code class="varname">ListenAddresses</code></span></dt><dd>
+                  <p>The interface addresses to listen on. Hostnames may be
+                  used instead of IP addresses. The format is:
+                  <code class="option">inet:hostname</code> or
+                  <code class="option">inet:10.0.0.1</code>.</p>
+                </dd><dt><span class="term"><code class="varname">CertificateFile</code></span></dt><dd>
+                  <p>The path to the server's public certificate.</p>
+                </dd><dt><span class="term"><code class="varname">PrivateKeyFile</code></span></dt><dd>
+                  <p>The path to the server's private key. This should only
+                  be readable by root and/or the <code class="option">User</code>.</p>
+                </dd><dt><span class="term"><code class="varname">TrustedCAsFile</code></span></dt><dd>
+                  <p>The Certificate Authority created by <span class="citerefentry">
+                      <span class="refentrytitle">bbstored-certs</span>
+
+                      (8)
+                    </span>.</p>
+                </dd></dl></div>
+        </dd></dl></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58162512"></a><h2>Examples</h2>
+    
+
+    <p>The following is an example bbstored.conf:</p>
+
+    <pre class="programlisting">RaidFileConf = /etc/box/raidfile.conf
+AccountDatabase = /etc/box/bbstored/accounts.txt
+
+TimeBetweenHousekeeping = 900
+
+Server
+{
+  PidFile = /var/run/bbstored.pid
+  User = _bbstored
+  ListenAddresses = inet:server.example.com
+  CertificateFile = /etc/box/bbstored/server.example.com-cert.pem
+  PrivateKeyFile = /etc/box/bbstored/server.example.com-key.pem
+  TrustedCAsFile = /etc/box/bbstored/clientCA.pem
+}</pre>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58164176"></a><h2>Files</h2>
+    
+
+    <p><code class="filename">/etc/box/bbstored.conf</code></p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58165456"></a><h2>See Also</h2>
+    
+
+    <p><span class="citerefentry">
+        <span class="refentrytitle">bbstored</span>
+
+        (8)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">bbstored-config</span>
+
+        (8)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">raidfile-config</span>
+
+        (8)
+      </span></p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58169936"></a><h2>Authors</h2>
+    
+
+    <p><span class="author">Ben Summers</span></p>
+
+    <p><span class="author">Per Thomsen</span></p>
+
+    <p><span class="author">James O'Gorman</span></p>
+  </div>
+</div></body></html>

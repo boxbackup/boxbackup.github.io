@@ -1,0 +1,101 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>bbstored-config</title><link rel="stylesheet" href="../bbdoc-man.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.73.2"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="header"><div id="logo"><img src="../images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle"><img src="../images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle"></div></div><div class="refentry" lang="en"><a name="idp57852496"></a><div class="titlepage"></div>
+  
+
+  <div class="refnamediv"><h2>Name</h2><p>
+    bbstored-config
+
+     &#8212; Box Backup store daemon configuration file
+    generator
+  </p></div>
+
+  <div class="refsynopsisdiv"><h2>Synopsis</h2>
+    <div class="cmdsynopsis"><p>
+      <code class="command">bbstored-config</code> 
+
+        configdir 
+
+        servername 
+
+        username 
+    </p></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp57859408"></a><h2>Description</h2>
+    
+
+    <p>The bbstored-config script creates configuration files and server
+    certificates for a bbstored instance. It takes three parameters:</p>
+
+    <div class="variablelist"><dl><dt><span class="term">configdir</span></dt><dd>
+          <p>The directory where config files will reside. A
+          <code class="filename">bbstored</code> subdirectory will be created where
+          several config files will reside. The
+          <code class="filename">bbstored.conf</code> file will be created in
+          <code class="varname">configdir</code>.</p>
+        </dd><dt><span class="term">servername</span></dt><dd>
+          <p>The name of the server that is being configured. Usually the
+          fully qualified domain name of the machine in question.</p>
+        </dd><dt><span class="term">username</span></dt><dd>
+          <p>The name of the user that should be running the
+          <span class="command"><strong>bbstored</strong></span> process. Recommended name:
+          _bbstored.</p>
+        </dd></dl></div>
+
+    <p>A valid <span class="citerefentry">
+        <span class="refentrytitle">raidfile.conf</span>
+
+        (5)
+      </span> must be found in configdir. Several steps are taken
+    during the run of <span class="command"><strong>bbstored-config</strong></span>:</p>
+
+    <div class="itemizedlist"><ul type="disc"><li>
+        <p>Server certificates are created. This requires interaction from
+        the operator.</p>
+      </li><li>
+        <p>The RAID volumes are checked to ensure that the configuration is
+        consistent and will work.</p>
+      </li><li>
+        <p>Instructions for next steps to take are shown. These steps may
+        be different for different OS platforms, so pay close attention to
+        these instructions.</p>
+      </li></ul></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58134224"></a><h2>Files</h2>
+    
+
+    <p><code class="filename">/etc/box/bbstored.conf</code></p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58135504"></a><h2>See Also</h2>
+    
+
+    <p><span class="citerefentry">
+        <span class="refentrytitle">bbstored.conf</span>
+
+        (5)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">bbstored</span>
+
+        (8)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">bbstored-certs</span>
+
+        (8)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">raidfile-config</span>
+
+        (8)
+      </span></p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp58153424"></a><h2>Authors</h2>
+    
+
+    <p><span class="author">Ben Summers</span></p>
+
+    <p><span class="author">Per Thomsen</span></p>
+
+    <p><span class="author">James O'Gorman</span></p>
+  </div>
+</div></body></html>

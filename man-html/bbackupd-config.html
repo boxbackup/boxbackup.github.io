@@ -1,0 +1,94 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>bbackupd-config</title><link rel="stylesheet" href="../bbdoc-man.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.73.2"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="header"><div id="logo"><img src="../images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle"><img src="../images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle"></div></div><div class="refentry" lang="en"><a name="idp57964496"></a><div class="titlepage"></div>
+  
+
+  <div class="refnamediv"><h2>Name</h2><p>
+    bbackupd-config
+
+     &#8212; Box Backup client daemon configuration file
+    generator
+  </p></div>
+
+  <div class="refsynopsisdiv"><h2>Synopsis</h2>
+    <div class="cmdsynopsis"><p>
+      <code class="command">bbackupd-config</code> 
+
+        config-dir 
+
+        backup-mode 
+
+        account-num 
+
+        server-hostname 
+
+        working-dir 
+
+        backup-dir 
+
+       [backup-dir ...]
+    </p></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp150440784"></a><h2>Description</h2>
+    
+
+    <p>The bbackupd-config script creates configuration files and client
+    certificates. It takes at least six parameters:</p>
+
+    <div class="variablelist"><dl><dt><span class="term">config-dir</span></dt><dd>
+          <p>Configuration directory. Usually
+          <code class="filename">/etc/box</code>.</p>
+        </dd><dt><span class="term">backup-mode</span></dt><dd>
+          <p>Either lazy or snapshot.</p>
+        </dd><dt><span class="term">account-num</span></dt><dd>
+          <p>The client account number. This is set by the bbstored
+          administrator.</p>
+        </dd><dt><span class="term">server-hostname</span></dt><dd>
+          <p>The hostname or IP address of the bbstored server.</p>
+        </dd><dt><span class="term">working-dir</span></dt><dd>
+          <p>A directory to keep temporary state files. This is usually
+          something like <code class="filename">/var/bbackupd</code>. This can be
+          changed in <code class="filename">bbackupd.conf</code> later on if
+          required.</p>
+        </dd><dt><span class="term">backup-dir</span></dt><dd>
+          <p>A space-separated list of directories to be backed up. Note
+          that this <span class="emphasis"><em>does not</em></span> traverse mount
+          points.</p>
+        </dd></dl></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp150453328"></a><h2>Files</h2>
+    
+
+    <p><code class="filename">/etc/box/bbackupd.conf</code></p>
+
+    <p><code class="filename">/etc/box/bbackupd/NotifySysAdmin.sh</code></p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp150455248"></a><h2>See Also</h2>
+    
+
+    <p><span class="citerefentry">
+        <span class="refentrytitle">bbackupd.conf</span>
+
+        (5)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">bbackupd</span>
+
+        (8)
+      </span>, <span class="citerefentry">
+        <span class="refentrytitle">bbackupctl</span>
+
+        (8)
+      </span></p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp150459600"></a><h2>Authors</h2>
+    
+
+    <p><span class="author">Ben Summers</span></p>
+
+    <p><span class="author">Per Thomsen</span></p>
+
+    <p><span class="author">James O'Gorman</span></p>
+  </div>
+</div></body></html>

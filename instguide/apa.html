@@ -1,0 +1,76 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Appendix A. Box Backup and SSL</title><link rel="stylesheet" type="text/css" href="../bbdoc.css"><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"><link rel="home" href="index.html" title="Box Backup Build and Installation Guide"><link rel="up" href="index.html" title="Box Backup Build and Installation Guide"><link rel="prev" href="ch02.html" title="Chapter 2. Building and installing"><link rel="next" href="apb.html" title="Appendix B. Compiling bbackupd on Windows using Visual C++"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="header"><div id="logo"><img src="../images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle"><img src="../images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle"></div></div><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Appendix A. Box Backup and SSL</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="apb.html">Next</a></td></tr></table><hr></div><div class="appendix"><div class="titlepage"><div><div><h1 class="title"><a name="idp62092368"></a>Appendix A. Box Backup and SSL</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="section"><a href="apa.html#idp62093136">General notes</a></span></dt><dd><dl><dt><span class="section"><a href="apa.html#idp62094544">Upgrade your installation</a></span></dt><dt><span class="section"><a href="apa.html#idp61940688">Install another OpenSSL</a></span></dt><dt><span class="section"><a href="apa.html#idp61943248">Use the old version of OpenSSL</a></span></dt></dl></dd><dt><span class="section"><a href="apa.html#idp61944912">If you have problems with the config scripts</a></span></dt><dd><dl><dt><span class="section"><a href="apa.html#idp61947984">OpenSSL config file</a></span></dt></dl></dd></dl></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp62093136"></a>General notes</h2></div></div></div><p>Ideally, you need to use version 0.9.7 or later of OpenSSL. If
+      this is installed on your system by default (and it is on most recent
+      releases of UNIX like OSes) then everything should just work.</p><p>However, if it isn't, you have a few options.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp62094544"></a>Upgrade your installation</h3></div></div></div><p>The best option is to upgrade your installation to use 0.9.7.
+        Hopefully your package manager will make this easy for you. This may
+        require reinstallation of lots of software which depends on OpenSSL,
+        so may not be ideal.</p><p>(But as there have been a few security flaws in OpenSSL
+        recently, you probably want to upgrade it anyway.)</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp61940688"></a>Install another OpenSSL</h3></div></div></div><p>The second best option is to install another copy. If you
+        download and install from source, it will probably install into
+        /usr/local/ssl. You can then configure Box Backup to use it
+        using:</p><pre class="programlisting">./configure --with-ssl-headers=/usr/local/ssl/include --with-ssl-lib=/usr/local/ssl/lib</pre><p>which will set up the various includes and libraries for
+        you.</p><p>The configuration scripts may be a problem, depending on your
+        installation. See below for more information.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp61943248"></a>Use the old version of OpenSSL</h3></div></div></div><p>If you have an old version installed, the configuration script
+        will give you instructions on how to enable support for older
+        versions. Read the warnings, and please, whatever you do, don't
+        release binary packages or ports which enable this option.</p><p>You may have issues with the configuration scripts, see
+        below.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp61944912"></a>If you have problems with the config scripts</h2></div></div></div><p>If you get OpenSSL related errors with the configuration scripts,
+      there are two things to check:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>The bin directory within your OpenSSL directory is in the path
+          (if you have installed another version)</p></li><li class="listitem"><p>You have an openssl.cnf file which works and can be
+          found.</p></li></ul></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp61947984"></a>OpenSSL config file</h3></div></div></div><p>You need to have an openssl.cnf file. The default will generally
+        work well (see example at end). Make sure the openssl utility can find
+        it, either set the OPENSSL_CONF environment variable, or install it
+        into the location that is mentioned in the error messages.</p><p>Example OpenSSL config file:</p><a name="openssl.cnf"></a><pre class="programlisting">#
+# OpenSSL example configuration file.
+# This is mostly being used for generation of certificate requests.
+# 
+
+RANDFILE                = /dev/arandom
+
+####################################################################
+[ req ]
+default_bits            = 1024
+default_keyfile         = privkey.pem
+distinguished_name      = req_distinguished_name
+attributes              = req_attributes
+
+[ req_distinguished_name ]
+countryName                     = Country Name (2 letter code)
+#countryName_default            = AU
+countryName_min                 = 2
+countryName_max                 = 2
+
+stateOrProvinceName             = State or Province Name (full name)
+#stateOrProvinceName_default    = Some-State
+
+localityName                    = Locality Name (eg, city)
+
+0.organizationName              = Organization Name (eg, company)
+#0.organizationName_default     = Internet Widgits Pty Ltd
+
+# we can do this but it is not needed normally :-)
+#1.organizationName             = Second Organization Name (eg, company)
+#1.organizationName_default     = CryptSoft Pty Ltd
+
+organizationalUnitName          = Organizational Unit Name (eg, section)
+#organizationalUnitName_default =
+
+commonName                      = Common Name (eg, fully qualified host name)
+commonName_max                  = 64
+
+emailAddress                    = Email Address
+emailAddress_max                = 64
+
+[ req_attributes ]
+challengePassword               = A challenge password
+challengePassword_min           = 4
+challengePassword_max           = 20
+
+unstructuredName                = An optional company name
+
+[ x509v3_extensions ]
+
+nsCaRevocationUrl               = http://www.cryptsoft.com/ca-crl.pem
+nsComment                       = "This is a comment"
+
+# under ASN.1, the 0 bit would be encoded as 80
+nsCertType                      = 0x40</pre></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="apb.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 2. Building and installing </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Appendix B. Compiling bbackupd on Windows using Visual C++</td></tr></table></div></body></html>

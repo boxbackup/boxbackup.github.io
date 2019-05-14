@@ -1,0 +1,60 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 1. Introduction</title><link rel="stylesheet" type="text/css" href="../bbdoc.css"><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"><link rel="home" href="index.html" title="Box Backup Build and Installation Guide"><link rel="up" href="index.html" title="Box Backup Build and Installation Guide"><link rel="prev" href="pr01.html" title="License"><link rel="next" href="ch02.html" title="Chapter 2. Building and installing"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="header"><div id="logo"><img src="../images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle"><img src="../images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle"></div></div><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 1. Introduction</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="pr01.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="idp62122192"></a>Chapter 1. Introduction</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="section"><a href="ch01.html#idp62123600">Client daemon</a></span></dt><dd><dl><dt><span class="section"><a href="ch01.html#idp62126544">Restoration</a></span></dt><dt><span class="section"><a href="ch01.html#idp62127696">Client Resource Usage</a></span></dt></dl></dd><dt><span class="section"><a href="ch01.html#idp62043472">Security</a></span></dt><dd><dl><dt><span class="section"><a href="ch01.html#idp62044496">Encryption</a></span></dt><dt><span class="section"><a href="ch01.html#idp62046416">Authentication</a></span></dt></dl></dd><dt><span class="section"><a href="ch01.html#idp62048080">Server daemon</a></span></dt></dl></div><p>The backup daemon, bbackupd, runs on all machines to be backed up.
+    The store server daemon, bbstored runs on a central server. Data is sent
+    to the store server, which stores all data on local filesystems, that is,
+    only on local hard drives. Tape or other archive media is not used.</p><p>The system is designed to be easy to set up and run, and cheap to
+    use. Once set up, there should be no need for user or administrative
+    intervention, apart from usual system maintenance.</p><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp62123600"></a>Client daemon</h2></div></div></div><p>bbackupd is configured with a list of directories to back up. It
+      has a lazy approach to backing up data. Every so often, the directories
+      are scanned, and new data is uploaded to the server. This new data must
+      be over a set age before it is uploaded. This prevents rapid revisions
+      of a file resulting in many uploads of the same file in a short period
+      of time.</p><p>It can also operate in a snapshot mode, which behaves like
+      traditional backup software. When instructed by an external bbackupctl
+      program, it will upload all changed files to the server.</p><p>The daemon is always running, although sleeping most of the time.
+      In lazy mode, it is completely self contained -- scripts running under
+      cron jobs are not used. The objective is to keep files backed up, not to
+      make snapshots of the filesystem at particular points in time
+      available.</p><p>If an old version of the file is present on the server, a modified
+      version of the rsync algorithm is used to upload only the changed
+      portions of the file.</p><p>After a new version is uploaded, the old version is still
+      available (subject to disc space on the server). Similarly, a deleted
+      file is still available. The only limit to their availability is space
+      allocated to this account on the server</p><p>Future versions will add the ability to mark the current state of
+      files on the server, and restore from this mark. This will emulate the
+      changing of tapes in a tape backup system.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp62126544"></a>Restoration</h3></div></div></div><p>Restoring files is performed using a query tool, bbackupquery.
+        This can be used to restore entire directories, or as an 'FTP-like'
+        tool to list and retrieve individual files. Old versions and deleted
+        files can be retrieved using this tool for as long as they are kept on
+        the server.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp62127696"></a>Client Resource Usage</h3></div></div></div><p>bbackupd uses only a minimal amount of disc space to store
+        records on uploaded files -- less than 32 bytes per directory and file
+        over a set size threshold. However, it minimises the amount of queries
+        it must make to the server by storing, in memory, a data structure
+        which allows it to determine what data is new. It does not need to
+        store a record of all files, essentially just the directory names and
+        last modification times. This is not a huge amount of memory.</p><p>If there are no changes to the directories, then the client will
+        not even connect to the server.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp62043472"></a>Security</h2></div></div></div><p>Box Backup is designed to be secure in several ways. The data
+      stored on the backup store server is encrypted using secret-key
+      cryptography. Additionally, the transport layer is encrypted using TLS,
+      to ensure that the communications can't be snooped.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp62044496"></a>Encryption</h3></div></div></div><p>The files, directories, filenames and file attributes are all
+        encrypted. By examining the stored files on the server, it is only
+        possible to determine the approximate sizes of a files and the tree
+        structure of the disc (not names, just number of files and
+        subdirectories in a directory). By monitoring the actions performed by
+        a client, it is possible to determine the frequency and approximate
+        scope of changes to files and directories.</p><p>The connections between the server and client are encrypted
+        using TLS (latest version of SSL). Traffic analysis is possible to
+        some degree, but limited in usefulness.</p><p>An attacker will not be able to recover the backed up data
+        without the encryption keys. Of course, you won't be able to recover
+        your files without the keys either, so you must make a conventional,
+        secure, backup of these keys.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp62046416"></a>Authentication</h3></div></div></div><p>SSL certificates are used to authenticate clients. UNIX user
+        accounts are not used to minimise the dependence on the configuration
+        of the operating system hosting the server.</p><p>A script is provided to run the necessary certification
+        authority with minimal effort.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp62048080"></a>Server daemon</h2></div></div></div><p>The server daemon is designed to be simple to deploy, and run on
+      the cheapest hardware possible. To avoid the necessity to use expensive
+      hardware RAID or software RAID with complex setup, it (optionally)
+      stores files using RAID techniques.</p><p>It does not need to run as a privileged user.</p><p>Each account has a set amount of disc space allocated, with a soft
+      and a hard limit. If the account exceeds the soft limit, a housekeeping
+      process will start deleting old versions and deleted files to reduce the
+      space used to below the soft limit. If the backup client attempts to
+      upload a file which causes the store to exceed the hard limit, the
+      upload will be refused.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pr01.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">License </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Building and installing</td></tr></table></div></body></html>

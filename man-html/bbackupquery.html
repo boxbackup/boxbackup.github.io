@@ -1,0 +1,260 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>bbackupquery</title><link rel="stylesheet" href="../bbdoc-man.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.73.2"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="header"><div id="logo"><img src="../images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle"><img src="../images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle"></div></div><div class="refentry" lang="en"><a name="idp57930960"></a><div class="titlepage"></div>
+  
+
+  <div class="refnamediv"><h2>Name</h2><p>
+    bbackupquery
+
+     &#8212; Box Backup store query and file retrieval
+  </p></div>
+
+  <div class="refsynopsisdiv"><h2>Synopsis</h2>
+    <div class="cmdsynopsis"><p>
+      <code class="command">bbackupquery</code> 
+
+       [-q]
+
+       [-c configfile]
+
+       [command ...]
+    </p></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp57937488"></a><h2>Description</h2>
+    
+
+    <p><span class="command"><strong>bbackupquery</strong></span> is the main way of interacting with
+    the backup store from a Box Backup client machine. It supports both
+    interactive and batch modes of operation.</p>
+
+    <p>It can be used to reviewing the status of a client machine's backup
+    store, getting status from the store server. The main use is to retrieve
+    files and directories when needed.</p>
+
+    <p><span class="command"><strong>bbackupquery</strong></span> supports interactive and batch modes
+    of operation. Interactive mode allows for interaction with the server much
+    like an interactive FTP client.</p>
+
+    <p>Batch mode is invoked by putting commands into the invocation of
+    <span class="command"><strong>bbackupquery</strong></span>. Example:</p>
+
+    <pre class="programlisting">bbackupquery "list home-dirs" quit</pre>
+
+    <p>Note that commands that contain spaces are enclosed in double
+    quotes. If the <span class="command"><strong>quit</strong></span> command is omitted, after the
+    preceding commands are completed, <span class="command"><strong>bbackupquery</strong></span> will
+    enter interactive mode.</p>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp150577616"></a><h2>Options</h2>
+    
+
+    <div class="variablelist"><dl><dt><span class="term"><code class="option">-q</code></span></dt><dd>
+            <p>Quiet. Suppresses status output while running.</p>
+          </dd><dt><span class="term"><code class="option">-c</code> <code class="option">configfile</code></span></dt><dd>
+            <p>Use configfile instead of the default bbackupd.conf file.
+            Can be a relative or full path.</p>
+          </dd></dl></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp150595024"></a><h2>Commands</h2>
+    
+
+    <p>The commands that can be used in bbackupquery are listed
+    below.</p>
+
+    <div class="variablelist"><dl><dt><span class="term"><span class="command"><strong>help</strong></span></span></dt><dd>
+          <p>Displays the basic help message, which gives information about
+          the commands available in <span class="command"><strong>bbackupquery</strong></span>. Use the
+          form <span class="command"><strong>help command</strong></span> to get help on a specific
+          command.</p>
+        </dd><dt><span class="term"><span class="command"><strong>quit</strong></span></span></dt><dd>
+          <p>End the session with the store server, and quit
+          bbackupquery.</p>
+        </dd><dt><span class="term"><span class="command"><strong>cd</strong></span> [<span class="optional">options</span>]
+        <code class="varname">directory-name</code></span></dt><dd>
+          <p>Change directory. Options: </p><div class="variablelist"><dl><dt><span class="term"><code class="option">-d</code></span></dt><dd>
+                  <p>consider deleted directories for traversal</p>
+                </dd><dt><span class="term"><code class="option">-o</code></span></dt><dd>
+                  <p>consider old versions of directories for traversal.
+                  This option should never be useful in a correctly formed
+                  store.</p>
+                </dd></dl></div>
+        </dd><dt><span class="term"><span class="command"><strong>lcd</strong></span>
+        <code class="varname">local-directory-name</code></span></dt><dd>
+          <p>Change directory on the client machine. To list the contents
+          of the local directory, type <span class="command"><strong>sh ls</strong></span> (on Unix-like
+          machines).</p>
+        </dd><dt><span class="term"><span class="command"><strong>list</strong></span> [<span class="optional">options</span>]
+        [<span class="optional">directory-name</span>]</span></dt><dd>
+          <p>The list (or its synonym <span class="command"><strong>ls</strong></span>) command lists
+          the content of the current, or specified, directory. The options are
+          as follows:</p>
+
+          <div class="variablelist"><dl><dt><span class="term"><code class="option">-r</code></span></dt><dd>
+                  <p>recursively list all files</p>
+                </dd><dt><span class="term"><code class="option">-d</code></span></dt><dd>
+                  <p>list deleted files and directories</p>
+                </dd><dt><span class="term"><code class="option">-o</code></span></dt><dd>
+                  <p>list old versions of files and directories</p>
+                </dd><dt><span class="term"><code class="option">-I</code></span></dt><dd>
+                  <p>don't display object IDs</p>
+                </dd><dt><span class="term"><code class="option">-F</code></span></dt><dd>
+                  <p>don't display flags</p>
+                </dd><dt><span class="term"><code class="option">-t</code></span></dt><dd>
+                  <p>show file modification time (and attr mod time, if the
+                  object has attributes).</p>
+                </dd><dt><span class="term"><code class="option">-s</code></span></dt><dd>
+                  <p>show file size in blocks used on server. Note that
+                  this is only a very approximate indication of local file
+                  size.</p>
+                </dd></dl></div>
+        </dd><dt><span class="term"><span class="command"><strong>ls</strong></span> [<span class="optional">options</span>]
+        [<span class="optional">directory-name</span>]</span></dt><dd>
+          <p>Synonym for <span class="command"><strong>list</strong></span>.</p>
+        </dd><dt><span class="term"><span class="command"><strong>pwd</strong></span></span></dt><dd>
+          <p>Print current directory, always relative to the backup store
+          root.</p>
+        </dd><dt><span class="term"><span class="command"><strong>sh</strong></span> <code class="varname">shell-command</code></span></dt><dd>
+          <p>Everything after the sh is passed to a shell and run. All
+          output from the command is displayed in the client.</p>
+
+          <p>Example: to list the contents of the current directory on the
+          client machine type <span class="command"><strong>sh ls</strong></span>.</p>
+        </dd><dt><span class="term"><span class="command"><strong>compare -a</strong></span></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><span class="command"><strong>compare -l</strong></span>
+        <code class="varname">location-name</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><span class="command"><strong>compare</strong></span> <code class="varname">store-dir-name</code>
+        <code class="varname">local-dir-name</code></span></dt><dd>
+          <p>Compare the current data in the store with the data on the
+          disc. Please note that all the data will be downloaded from the
+          store, so this can be a very lengthy process depending on the size
+          of the store, and the size of the part you are comparing.</p>
+
+          <p>Options:</p>
+
+          <div class="variablelist"><dl><dt><span class="term"><code class="option">-a</code></span></dt><dd>
+                  <p>compare all locations.</p>
+                </dd><dt><span class="term"><code class="option">-l</code></span></dt><dd>
+                  <p>compare one backup location as specified in the
+                  configuration file. This compares one of the top level store
+                  directories.</p>
+                </dd><dt><span class="term"><code class="option">-c</code></span></dt><dd>
+                  <p>set return code. The return code is set to the
+                  following values, if quit is the next command. So, if
+                  another command is run after the compare, the return code
+                  will not refer to the compare. This option is very useful
+                  for automating compares. Return code values:</p><div class="itemizedlist"><ul type="disc"><li>
+                        <p><code class="option">1</code> -- no differences were
+                        found</p>
+                      </li><li>
+                        <p><code class="option">2</code> -- differences were
+                        found</p>
+                      </li><li>
+                        <p><code class="option">3</code> -- an error occured</p>
+                      </li></ul></div>
+                </dd></dl></div>
+        </dd><dt><span class="term"><span class="command"><strong>get</strong></span> <code class="varname">object-filename</code>
+        [<span class="optional">local-filename</span>]</span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><span class="command"><strong>get -i</strong></span> <code class="varname">object-id</code>
+        <code class="varname">local-filename</code></span></dt><dd>
+          <p>Gets a file from the store. Object is specified as the
+          filename within the current directory. Local filename is optional.
+          Ignores old and deleted files when searching the directory for the
+          file to retrieve.</p>
+
+          <p>To get an old or deleted file, use the <code class="option">-i</code>
+          option and select the object as a hex object ID (first column in
+          listing). The local filename must be specified.</p>
+        </dd><dt><span class="term"><span class="command"><strong>getobject</strong></span> <code class="varname">object-id</code>
+        <code class="varname">local-filename</code></span></dt><dd>
+          <p>Gets the object specified by the object id (in hex) and stores
+          the raw contents in the local file specified. Note: This is only
+          useful for debugging as it does not decode files from the stored
+          format, which is encrypted and compressed.</p>
+        </dd><dt><span class="term"><span class="command"><strong>restore</strong></span> [<span class="optional">-d</span>]
+        <code class="varname">directory-name</code>
+        <code class="varname">local-directory-name</code></span></dt><dd>
+          <p></p>
+        </dd><dt><span class="term"><span class="command"><strong>restore -r</strong></span></span></dt><dd>
+          <p>Restores a directory to the local disc. The local directory
+          specified must not exist (unless a previous restore is being
+          restarted). The root cannot be restored -- restore locations
+          individually.</p>
+
+          <p>Options:</p>
+
+          <div class="variablelist"><dl><dt><span class="term"><code class="option">-d</code></span></dt><dd>
+                  <p>restore a deleted directory</p>
+                </dd><dt><span class="term"><code class="option">-r</code></span></dt><dd>
+                  <p>resume an interrupted restore</p>
+                </dd></dl></div><p>If a restore operation is interrupted for any
+          reason, it can be restarted using the <code class="option">-r</code> switch.
+          Restore progress information is saved in a file at regular intervals
+          during the restore operation to allow restarts.</p>
+        </dd><dt><span class="term"><span class="command"><strong>usage</strong></span> [<span class="optional">-m</span>]</span></dt><dd>
+          <p>Show space used on the server for this account. Display
+          fields:</p><div class="itemizedlist"><ul type="disc"><li>
+                <p><span class="property">Used</span>: Total amount of space used on
+                the server</p>
+              </li><li>
+                <p><span class="property">Old files</span>: Space used by old
+                files</p>
+              </li><li>
+                <p><span class="property">Deleted files</span>: Space used by
+                deleted files</p>
+              </li><li>
+                <p><span class="property">Directories</span>: Space used by the
+                directory structure</p>
+              </li></ul></div>
+
+          <p>When <span class="property">Used</span> exceeds the soft limit, the
+          server will start to remove old and deleted files until the usage
+          drops below the soft limit. After a while, you should expect to see
+          the usage stay at just below the soft limit. You only need more
+          space if the space used by old and deleted files is near
+          zero.</p>
+
+          <p>The <code class="option">-m</code> option displays output in
+          machine-readable form.</p>
+        </dd></dl></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp150689232"></a><h2>Bugs</h2>
+    
+
+    <p>If you find a bug in Box Backup and you want to let us know about
+    it, join the <a class="ulink" href="http://lists.warhead.org.uk/mailman/listinfo/boxbackup" target="_top">mailing
+    list</a> and send us a description of the problem there.</p>
+
+    <p>To report a bug, give us at least the following information:</p>
+
+    <div class="itemizedlist"><ul type="disc"><li>
+        <p>The version of Box Backup you are running</p>
+      </li><li>
+        <p>The platform you are running on (hardware and OS), for both
+        client and server.</p>
+      </li><li>
+        <p>If possible attach your config files (bbstored.conf,
+        bbackupd.conf) to the bug report.</p>
+      </li><li>
+        <p>Also attach any log file output that helps shed light on the
+        problem you are seeing.</p>
+      </li><li>
+        <p>And last but certainly not least, a description of what you are
+        seeing, in as much detail as possible.</p>
+      </li></ul></div>
+  </div>
+
+  <div class="refsection" lang="en"><a name="idp150695632"></a><h2>Authors</h2>
+    
+
+    <p><span class="author">Ben Summers</span></p>
+
+    <p><span class="author">Per Thomsen</span></p>
+
+    <p><span class="author">James O'Gorman</span></p>
+  </div>
+</div></body></html>

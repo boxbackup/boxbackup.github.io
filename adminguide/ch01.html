@@ -1,0 +1,556 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 1. Configuration</title><link rel="stylesheet" type="text/css" href="../bbdoc.css"><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"><link rel="home" href="index.html" title="Box Backup administrator's guide"><link rel="up" href="index.html" title="Box Backup administrator's guide"><link rel="prev" href="pr01.html" title="License"><link rel="next" href="ch02.html" title="Chapter 2. Administration"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="header"><div id="logo"><img src="../images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle"><img src="../images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle"></div></div><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 1. Configuration</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="pr01.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="idp66320464"></a>Chapter 1. Configuration</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="section"><a href="ch01.html#idp66321104">System configuration</a></span></dt><dd><dl><dt><span class="section"><a href="ch01.html#idp66321744">Server</a></span></dt><dt><span class="section"><a href="ch01.html#idp62057680">Certificate Management</a></span></dt><dt><span class="section"><a href="ch01.html#idp62090320">Log Files</a></span></dt><dt><span class="section"><a href="ch01.html#idp62097616">Configuring a client</a></span></dt><dt><span class="section"><a href="ch01.html#idp61972560">Configuration Options</a></span></dt></dl></dd></dl></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp66321104"></a>System configuration</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp66321744"></a>Server</h3></div></div></div><p>After you've downloaded and compiled the programs you need to
+        install the programs on your server. As root do the following:</p><pre class="programlisting">make install-backup-server</pre><p>This assumes that you are installing on the same server that you
+        compiled the software on. If not, copy the
+        boxbackup-x.xx-backup-server-OSNAME.tgz file to the server you want to
+        run on, and install there. For example (on Mac OS X):</p><pre class="programlisting">tar zxvf boxbackup-0.10-server-darwin8.5.0.tgz
+cd boxbackup-0.10-server-darwin8.5.0
+./install-backup-server</pre><p>Then create the user for the backup daemon on the server:</p><pre class="programlisting">useradd _bbstored</pre><p>Box Backup has a built-in software RAID facility (redundant
+        array of inexpensive disks) for the backup store. This allows you to
+        spread the store data over three disks, and recover from the loss of
+        any one disk without losing data. However, this is now deprecated, and
+        you are recommended to use the software or hardware RAID facilities of
+        your operating system instead. Use the following command if you want
+        to create a simple server without Box Backup RAID:</p><pre class="programlisting">mkdir /tmp/boxbackupRepository                        # Create the directory
+chown _bbstored /tmp/boxbackupRepository/             # Change the owner to the new boxbackup daemon user
+
+/usr/local/sbin/raidfile-config /etc/box/  1024 /tmp/boxbackupRepository
+
+#substitute 1024 with the desired blocksize
+#substitute /tmp/boxbackupRepository with a directory that exists where you want the backup store located
+#/usr/local/sbin/raidfile-config --help shows you the options</pre><p>Then create the configuration file /etc/box/bbstored.conf The
+        hostname is tricky as it is used for two things: The name of the
+        server in the certificate and the address the server is listening on.
+        Since you might be using NAT, might move the server around or the
+        domain name might change, choose a name that describes the server.
+        When the network address of the server changes, you need to update the
+        <code class="literal">ListenAddresses</code> directive in the
+        <code class="filename">/etc/box/bbstored.conf</code> file.</p><pre class="programlisting">/usr/local/sbin/bbstored-config /etc/box hostname _bbstored</pre><p>This last step outputs 5 instructions that you must execute to
+        the letter. A lot of questions are raised on the mailing list because
+        these steps have not been followed properly.</p><p>TODO: Expand on this. Explain the 5 steps in detail.</p><p>If you want to run the server as a non-root user, look <a class="link" href="apb.html#WORoot">here</a>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp62057680"></a>Certificate Management</h3></div></div></div><p>There are two steps involved to create an account. You need to
+        create the account on the server, and sign a certificate to give the
+        client permission to connect to the server.</p><p>Running a Certification Authority for TLS (SSL) connections is
+        not trivial. However, a script to does most of the work in a way which
+        should be good enough for most deployments.</p><div class="important" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Important</h3><p>The certificate authority directory is intended to be stored
+          on another server. It should not be kept on the backup server, in
+          order to limit the impact of a server compromise. The instructions
+          and the script assume that it will be kept elsewhere, so will ask
+          you to copy files to and from the CA.</p></div><div class="warning" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Warning</h3><p>SSL certificates contain validity dates, including a "valid
+          from" time. If the clock on the machine which signs the certificates
+          is not syncronised to the clocks of the machines using these
+          certificates, you will probably get strange errors until the start
+          time is reached on all machines. If you get strange errors when
+          attempting to use new certificates, check the clocks on all machines
+          (client, store and CA). You will probably just need to wait a while
+          until the certificates become valid, rather than having to
+          regenerate them.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp62060624"></a>Set up a Certificate Authority</h4></div></div></div><p>It is recommended that you keep your Certificate Authority on
+          a separate machine than either the client or the server, preferably
+          without direct network access. The contents of this directory
+          control who can access your backup store server.</p><p>To setup the basic key structure, do the following:</p><pre class="programlisting">/usr/local/sbin/bbstored-certs ca init</pre><p>(See <a class="ulink" href="instguide.xml" target="_top">OpenSSL notes</a> if you
+          get an OpenSSL error)</p><p>This creates the directory called <code class="filename">ca</code> in
+          the current directory, and initialises it with basic keys.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp62076880"></a>Sign a server certificate</h4></div></div></div><p>When you use the <span class="command"><strong>bbstored-config</strong></span> script to
+          set up a config file for a server, it will generate a certificate
+          request (CSR) for you. Transfer it to the machine with your CA, then
+          do:</p><pre class="programlisting">/usr/local/sbin/bbstored-certs ca sign-server hostname-csr.pem</pre><p>This signs the certificate for the server. Follow the
+          instructions in the output on which files to install on the server.
+          The CSR file is now no longer needed. Make sure you run this command
+          from the directory above the directory 'ca'.</p><p>TODO: Explain instructions in output.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp62079824"></a>Set up an account</h4></div></div></div><p>Choose an account number for the user. This must be unique on
+          the server, and is presented as a 31 bit number in hex greater than
+          0, for example, 1 or 75AB23C. Then on the backup store server,
+          create the account with:</p><pre class="programlisting">/usr/local/sbin/bbstoreaccounts create 75AB23C 0 4096M 4505M</pre><p>This looks complicated. The numbers are, in order:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>The account number allocated (hex)</p></li><li class="listitem"><p>The RAID disc set (0 if you use raidfile-config and don't
+              add a new set)</p></li><li class="listitem"><p>Soft limit (size)</p></li><li class="listitem"><p>Hard limit (size)</p></li></ul></div><p>The sizes are are specified in Mb, Gb, or blocks, depending on
+          the suffix. 1M specifies 1 Mb, 1G specifies 1 Gb, and 1B specifies 1
+          block, the size of which depends on how you have configured the
+          raidfile system with raidfile-config.</p><p>In this example, I have allocated 4Gb (assuming you use 2048
+          byte blocks as per my example) as the soft limit, and 4Gb + 10% as
+          the hard limit.</p><p>NOTE The sizes specified here are pre-RAID. So if you are
+          using userland RAID, you are actually allocating two-thirds of this
+          amount. This means that, when you take compression into account,
+          that if you allocate 2Gb on the server, it'll probably hold about
+          2Gb of backed up files (depending on the compressability of those
+          files).</p><p>The backup client will (voluntarily) try not to upload more
+          data than is allowed by the soft limit. The store server will refuse
+          to accept a file if it would take it over the hard limit, and when
+          doing housekeeping for this account, try and delete old versions and
+          deleted files to reduce the space taken to below the soft
+          limit.</p><p>This command will create some files on disc in the raid file
+          directories (if you run as root, the utility will change to the user
+          specified in the bbstored.conf file to write them) and update the
+          accounts file. A server restart is not required.</p><p>NOTE If you get a message saying 'Exception: RaidFile (2/8)',
+          the directories you specified in the raidfile.conf are not writable
+          by the _bbstored user -- fix it, and try again.</p><p>Finally, tell the user their account number, and the hostname
+          of your server. They will use this to set up the backup client, and
+          send you a CSR. This has the account number embedded in it, and you
+          should be sure that it has the right account number in it.</p><p>Sign this CSR with this command:</p><pre class="programlisting">/usr/local/sbin/bbstored-certs ca sign 75AB23C-csr.pem</pre><p>Don't forget to check that the embedded account number is
+          correct! Then send the two files back to the user, as instructed by
+          the script.</p><p>Please read the Troubleshooting page if you have
+          problems.</p><p>TODO: Link to troubleshooting...</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp62090320"></a>Log Files</h3></div></div></div><p>You may wish to see what's going on with the server. Edit
+        /etc/syslog.conf, and add:</p><pre class="programlisting">local6.info                         /var/log/box
+local5.info                         /var/log/raidfile</pre><p><span class="bold"><strong>Note:</strong></span> Separators must be tabs,
+        otherwise these entries will be ignored.</p><pre class="programlisting">touch /var/log/box
+touch /var/log/raidfile</pre><p>Set up log rotation for these new log files. For example, if you
+        have <code class="filename">/etc/newsyslog.conf</code>, add the following lines
+        to it:</p><pre class="programlisting">/var/log/box                644  7    2000 *     Z
+/var/log/raidfile           644  7    2000 *     Z</pre><p>If you have <code class="filename">/etc/logrotate.d</code>, create a new
+        file in there (for example
+        <code class="filename">/etc/logrotate.d/boxbackup</code>) containing the
+        following:</p><pre class="programlisting">/var/log/box /var/log/raidfile {
+        weekly
+        create
+        compress
+        rotate 52
+}</pre><p>Then restart syslogd, for example:</p><pre class="programlisting">/etc/init.d/syslogd restart</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp62097616"></a>Configuring a client</h3></div></div></div><p>Before you can do any configuration, you need to know the
+        hostname of the server you will be using, and your account number on
+        that server.</p><p>Later in the process, you will need to send a certificate
+        request to the administrator of that server for it to be
+        signed.</p><p>Installation is covered in the compiling and installing section.
+        You only need the backup-client parcel.</p><p>It is important that you read all the output of the config
+        scripts. See the end of this page for an example.</p><p>The backup client has to be run as root, because it needs to
+        read all your files to back them up, although it is possible to back
+        up a single user's files by running it as that user. (Tip: specify a
+        directory other than <code class="filename">/etc/box</code>, and then give the
+        alternate config file as the first argument to
+        <span class="command"><strong>bbackupd</strong></span>). However, it will fall over if you don't
+        give yourself read access to one of your files.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp62101584"></a>Basic configuration</h4></div></div></div><p>Run the <span class="command"><strong>bbackupd-config</strong></span> script to generate
+          the configuration files and generate a private key and certificate
+          request.</p><pre class="programlisting">/usr/local/sbin/bbackupd-config /etc/box lazy <span class="bold"><strong>999 hostname</strong></span> /var/bbackupd <span class="bold"><strong>/home</strong></span></pre><p>(See <a class="ulink" href="instguide.xml" target="_top">OpenSSL notes</a> if you
+          get an OpenSSL error)</p><p>The items in bold need to be changed. In order, they are the
+          account number, the hostname of the server you're using, and
+          finally, the directories you want backed up. You can include as many
+          you want here.</p><p>However, the directories you specify must not contain other
+          mounted file systems within them at any depth. Specify them
+          separately, one per mount point. No checks are currently made to
+          catch bad configuration of this nature!</p><p>You may also want to consider changing the mode from lazy to
+          snapshot, depending on what your system is used for:</p><div class="glosslist"><dl><dt><span class="glossterm">Lazy Mode</span></dt><dd class="glossdef"><p>This mode regularly scans the files, with only a rough
+                schedule. It uploads files as and when they are changed, if
+                the latest version is more than a set age. This is good for
+                backing up user's documents stored on a server, and spreads
+                the load out over the day.</p></dd><dt><span class="glossterm">Snapshot Mode</span></dt><dd class="glossdef"><p>This mode emulates the traditional backup behaviour of
+                taking a snapshot of the filesystem. The backup daemon does
+                absolutely nothing until it is instructed to make a backup
+                using the bbackupctl utility (probably as a cron job), at
+                which point it uploads all files which have been changed since
+                the last time it uploaded.</p></dd></dl></div><p>When you run the config script, it will tell you what you need
+          to do next. Don't forget to read all the output. An example is shown
+          at the end of this page, but the instructions for your installation
+          may be different.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp61955408"></a>Certificates</h4></div></div></div><p>After you have sent your certificate request off to the server
+          administrator and received your certificate and CA root back,
+          install them where instructed by the bbackupd-config script during
+          basic bbackupd configuration.</p><p>You can then run the daemon (as root) by running
+          <span class="command"><strong>/usr/local/sbin/bbackupd</strong></span>, and of course, adding it
+          to your system's startup scripts. The first time it's run it will
+          upload everything. Interrupting it and restarting it will only
+          upload files which were not uploaded before - it's very
+          tolerant.</p><p>If you run in snapshot mode, you will need to add a cron job
+          to schedule backups. The config script will tell you the exact
+          command to use for your system.</p><p>Please read the Troubleshooting page if you have
+          problems.</p><p>Remember to make a traditional backup of the keys file, as
+          instructed. You cannot restore files without it.</p><p>It is recommended that you backup up all of /etc/box as it
+          will make things easier if you need to restore files. But only the
+          keys are absolutely essential.</p><p>If you want to see what it's doing in more detail (probably a
+          good idea), follow the instructions in the server setup to create
+          new log files with syslog. </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp61959504"></a>Adding and removing backed up locations</h4></div></div></div><p>By editing the /etc/box/bbackupd.conf file, you can add and
+          remove directories to back up - see comments in this file for help.
+          Send bbackupd a HUP signal after you modify it.</p><p>When you remove a location, it will not be marked as deleted
+          immediately. Instead, bbackupd waits about two days before doing so,
+          just in case you change your mind. After this, it will be eventually
+          removed from the store by the housekeeping process. Run as
+          root.</p><p>The backup client is designed to be run as root. It is
+          possible to run without root, but this is not recommended. Clock
+          synchronisation for file servers.</p><p>If you are using the backup client to backup a filesystem
+          served from a fileserver, you should ideally ensure that the
+          fileserver clocks are synchronised with the fileserver.</p><p>bbackupd will cope perfectly well if the clocks are not
+          synchronised. Errors up to about half an hour cause no problems.
+          Larger discrepancies cause a loss of efficiency and the potential to
+          back up a file during a write process.</p><p>There is a configuration parameter MaxFileTimeInFuture, which
+          specifies how far in the future a file must be for it to be uploaded
+          as soon as it is seen. You should not need to adjust this (default
+          is 2 days). Instead, get those clocks synchronised. Excluding files
+          and directories from the backup.</p><p>Within the bbackupd.conf file, there is a section named
+          BackupLocations which specifies which locations on disc should be
+          backed up. It has subsections, each of which is in the
+          format:</p><pre class="programlisting"> name
+ {
+    Path = /path/of/directory
+    (optional exclude directives)
+ }</pre><p><span class="bold"><strong>name</strong></span> is derived from the Path
+          by the config script, but should merely be unique.</p><p>The exclude directives are of the form:</p><pre class="programlisting">[Exclude|AlwaysInclude][File|Dir][|sRegex] = regex or full pathname</pre><p>(The regex suffix is shown as 'sRegex' to make File or Dir
+          plural)</p><p>For example:</p><pre class="programlisting"> ExcludeDir = /home/guest-user
+ ExcludeFilesRegex = *.(mp3|MP3)\$
+ AlwaysIncludeFile = /home/username/veryimportant.mp3</pre><p>This excludes the directory /home/guest-user from the backup
+          along with all mp3 files, except one MP3 file in particular.</p><p>In general, Exclude excludes a file or directory, unless the
+          directory is explicitly mentioned in a AlwaysInclude
+          directive.</p><p>If a directive ends in Regex, then it is a regular expression
+          rather than a explicit full pathname. See</p><pre class="programlisting"> man 7 re_format</pre><p>for the regex syntax on your platform.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp61968976"></a>Example configuration output</h4></div></div></div><p>This is an example of output from the bbstored-config
+          script.</p><div class="important" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Important</h3><p>Follow the instructions output by your script, not the ones
+            here -- they may be different for your system.</p></div><pre class="programlisting">/usr/local/sbin/bbackupd-config /etc/box lazy 51 server.example.com /var/bbackupd /home /etc/samba
+
+Setup bbackupd config utility.
+
+Configuration:
+   Writing configuration file: /etc/box/bbackupd.conf
+   Account: 51
+   Server hostname: server.example.com
+   Directories to back up:
+      /home
+      /etc/samba
+
+Note: If other file systems are mounted inside these directories, then problems may occur
+with files on the store server being renamed incorrectly. This will cause efficiency
+problems, but not affect the integrity of the backups.
+
+WARNING: Directories not checked against mountpoints. Check mounted filesystems manually.
+
+Creating /etc/box...
+Creating /etc/box/bbackupd
+Generating private key...
+ [OpenSSL output omitted]
+
+Generating keys for file backup
+Writing notify script /etc/box/bbackupd/NotifyStoreFull.sh
+Writing configuration file /etc/box/bbackupd.conf
+
+===================================================================
+
+bbackupd basic configuration complete.
+
+What you need to do now...
+
+1) Make a backup of /etc/box/bbackupd/51-FileEncKeys.raw
+   This should be a secure offsite backup.
+   Without it, you cannot restore backups. Everything else can
+   be replaced. But this cannot.
+   KEEP IT IN A SAFE PLACE, OTHERWISE YOUR BACKUPS ARE USELESS.
+
+2) Send /etc/box/bbackupd/51-csr.pem
+   to the administrator of the backup server, and ask for it to
+   be signed.
+
+3) The administrator will send you two files. Install them as
+      /etc/box/bbackupd/51-cert.pem
+      /etc/box/bbackupd/serverCA.pem
+   after checking their authenticity.
+
+4) You may wish to read the configuration file
+      /etc/box/bbackupd.conf
+   and adjust as appropraite.
+   
+   There are some notes in it on excluding files you do not
+   wish to be backed up.
+
+5) Review the script
+      /etc/box/bbackupd/NotifyStoreFull.sh
+   and check that it will email the right person when the store
+   becomes full. This is important -- when the store is full, no
+   more files will be backed up. You want to know about this.
+
+6) Start the backup daemon with the command
+      /usr/local/sbin/bbackupd
+   in /etc/rc.local, or your local equivalent.
+   Note that bbackupd must run as root.
+
+===================================================================</pre><p>Remember to make a secure, offsite backup of your backup keys,
+          as described in <a class="link" href="ch01.html#BasicConfig">Basic
+          configuration</a> above. If you do not, and that key is lost, you
+          have no backups.</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp61972560"></a>Configuration Options</h3></div></div></div><p>Box Backup has many options in its configuration file. We will
+        try to list them all here.</p><p>First of all, here is an example configuration file, for
+        reference:</p><div class="example"><a name="idp61973968"></a><p class="title"><b>Example 1.1. Example Configuration File</b></p><div class="example-contents"><pre class="programlisting">StoreHostname = localhost
+AccountNumber = 0x2
+
+KeysFile = /etc/box/2-FileEncKeys.raw
+CertificateFile = /etc/box/2-cert.pem
+PrivateKeyFile = /etc/box/2-key.pem
+TrustedCAsFile = /etc/box/serverCA.pem
+DataDirectory = /var/run/boxbackup
+NotifyScript = /etc/box/NotifySysadmin.sh
+CommandSocket = /var/run/box/bbackupd.sock
+
+UpdateStoreInterval = 86400
+MinimumFileAge = 3600
+MaxUploadWait = 7200
+FileTrackingSizeThreshold = 65536
+DiffingUploadSizeThreshold = 65536
+MaximumDiffingTime = 20
+ExtendedLogging = no
+LogAllFileAccess = yes
+
+Server
+{
+        PidFile = /var/run/bbackupd.pid
+}
+BackupLocations
+{
+        etc
+        {
+                Path = /etc
+        }
+        home
+        {
+                Path = /home
+                ExcludeDir = /home/shared
+                ExcludeDir = /home/chris/.ccache
+                ExcludeDir = /home/chris/.mozilla/firefox/vvvkq3vp.default/Cache
+        }
+}</pre></div></div><br class="example-break"><p>As you can see from the example above, the configuration file
+        has a number of subsections, enclosed in curly braces {}. Some options
+        appear outside of any subsection, and we will refer to these as <a class="link" href="ch01.html#RootOptions">root options</a>. The available options in
+        each section are described below.</p><p>Every option has the form <span class="quote">&#8220;<span class="quote">name = value</span>&#8221;</span>. Names are
+        not case-sensitive, but values are. Depending on the option, the value
+        may be:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>a path (to a file or directory);</p></li><li class="listitem"><p>a number (usually in seconds or bytes);</p></li><li class="listitem"><p>a boolean (the word Yes or No);</p></li><li class="listitem"><p>a hostname (or IP address).</p></li></ul></div><p>Paths are specified in native format, i.e. a full Windows path
+        with drive letter on Windows clients, or a full Unix path on Unix
+        clients.</p><div class="example"><a name="idp61989200"></a><p class="title"><b>Example 1.2. Example:</b></p><div class="example-contents"><p>StoreObjectInfoFile =
+            /var/state/boxbackup/bbackupd.dat</p><p>StoreObjectInfoFile = C:\Program Files\Box
+            Backup\data\bbackupd.dat</p></div></div><p><br class="example-break">The use of relative paths (which do not start with a
+        forward slash on Unix, or a drive specification on Windows) is
+        possible but not recommended, since they are interpreted relative to
+        the current working directory when bbackupd was started, which is
+        liable to change unexpectedly over time.</p><p>Numbers which start with "0x" are interpreted as hexadecimal.
+        Numbers which do not start with "0x" are interpreted as
+        decimal.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp61991248"></a>Root Options</h4></div></div></div><p>These options appear outside of any subsection. By convention
+          they are at the beginning of the configuration file.</p><p>Some options are required, and some are optional.</p><div class="glosslist"><dl><dt><span class="glossterm">StoreHostname (required)</span></dt><dd class="glossdef"><p>The Internet host name (DNS name) or IP address of the
+                server. This is only used to connect to the server.</p></dd><dt><span class="glossterm">AccountNumber (required)</span></dt><dd class="glossdef"><p>The number of the client's account on the server. This
+                must be provided by the server operator, and must match the
+                account number in the client's certificate, otherwise the
+                client will not be able to log into the server.</p><p>The account number may be specified in hexadecimal
+                (starting with 0x, as in the example above) or in decimal, but
+                since the server operator works in hexadecimal, that format is
+                highly recommended and is the default.</p></dd><dt><span class="glossterm">KeysFile (required)</span></dt><dd class="glossdef"><p>The path to the file containing the encryption key used
+                for data encryption of client file data and filenames. This is
+                the most important file to keep safe, since without it your
+                backups cannot be decrypted and are useless. Likewise, if an
+                attacker gets access to this key and to your encrypted
+                backups, he can decrypt them and read all your data. </p><p>Do not change the encryption key without deleting all
+                files from the account on the server first. None of your old
+                files on the store will be readable if you do so, and if you
+                change it back, none of the files uploaded with the new key
+                will be readable.</p></dd><dt><span class="glossterm">CertificateFile (required)</span></dt><dd class="glossdef"><p>The path to the OpenSSL client certificate in PEM
+                format. This is supplied by the server operator in response to
+                the certificate request which you send to them. Together with
+                the PrivateKeyFile, this provides access to the store server
+                and the encrypted data stored there.</p><p>It is not critical to protect this file or to back it up
+                safely, since it can be regenerated by creating a new
+                certificate request, and asking the server operator to sign
+                it. You may wish to back it up, together with the
+                PrivateKeyFile, to avoid this inconvenience if you lose all
+                your data and need quick access to your backups.</p><p>If you do back them up, you should keep them in a
+                separate location to the KeysFile, since any person holding
+                the KeysFile and the PrivateKeyFile can gain access to your
+                encrypted data and decrypt it.</p></dd><dt><span class="glossterm">PrivateKeyFile (required)</span></dt><dd class="glossdef"><p>The path to the OpenSSL private key in PEM format. This
+                is generated at the same time as the certificate request, but
+                there is no need to send it to the server operator, and you
+                should not do so, in case the communication is intercepted by
+                an attacker. Together with the CertificateFile, this provides
+                access to the store server and the encrypted data stored
+                there.</p><p>See the notes under CertificateFile for information
+                about backing up this file.</p></dd><dt><span class="glossterm">TrustedCAsFile (required)</span></dt><dd class="glossdef"><p>The path to the OpenSSL certificate of the Client
+                Certificate Authority (CCA), in PEM format. This is supplied
+                by the server operator along with your account details, or
+                along with your signed client certificate. This is used to
+                verify that the server which you are connecting to is
+                authorised by the person who signed your certificate. It
+                protects you against DNS and ARP poisoning and IP spoofing
+                attacks.</p></dd><dt><span class="glossterm">DataDirectory (required)</span></dt><dd class="glossdef"><p>The path to a directory where bbackupd will keep local
+                state information. This consists of timestamp files which
+                identify the last backup start and end times, used by
+                <span class="command"><strong>bbackupquery</strong></span> to determine whether files
+                have changed, and optionally a database of inode numbers,
+                which are used to check for files being renamed. The database
+                is only saved if Box Backup is built with Berkeley Database
+                (BDB) support.</p></dd><dt><span class="glossterm">NotifyScript (optional)</span></dt><dd class="glossdef"><p>The path to the script or command to run when the Box
+                Backup client detects an error during the backup process. This
+                is normally used to notify the client system administrator by
+                e-mail when a backup fails for any reason.</p><p>The script or command is called with one of the
+                following additional arguments to identify the cause of the
+                problem:</p><div class="glosslist"><dl><dt><span class="glossterm">store-full</span></dt><dd class="glossdef"><p>The backup store is full. No new files are being
+                      uploaded. If some files are marked as deleted, they
+                      should be removed in due course by the server's
+                      housekeeping process. Otherwise, you need to remove some
+                      files from your backup set, or ask the store operator
+                      for more space.</p></dd><dt><span class="glossterm">read-error</span></dt><dd class="glossdef"><p>One or more files which were supposed to be backed
+                      up could not be read. This could be due to:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>running the server as a non-root user;</p></li><li class="listitem"><p>backing up a mounted filesystem such as
+                            NFS;</p></li><li class="listitem"><p>access control lists being applied to some
+                            files;</p></li><li class="listitem"><p>SELinux being enabled;</p></li><li class="listitem"><p>trying to back up open files under
+                            Windows;</p></li><li class="listitem"><p>strange directory permissions such as 0000 or
+                            0400.</p></li></ul></div><p>Check the client logs, e.g.
+                      /var/log/bbackupd on Unix, or the Windows Event Viewer
+                      in Control Panel &gt; Administrative Tools, for more
+                      information about which files are not being backed up
+                      and why.</p></dd><dt><span class="glossterm">backup-error</span></dt><dd class="glossdef"><p>There was a communications error with the server,
+                      or an unexpected exception was encountered during a
+                      backup run. Check the client logs, e.g.
+                      <code class="filename">/var/log/box</code> on Unix, or the
+                      Windows Event Viewer in Control Panel &gt;
+                      Administrative Tools, for more information about the
+                      problem.</p><p>You may wish to check your Internet access to the
+                      server, check that the server is running, and ask your
+                      server operator to check your account on the
+                      server.</p></dd></dl></div></dd><dt><span class="glossterm">CommandSocket (optional)</span></dt><dd class="glossdef"><p>The path to the Unix socket which
+                <span class="command"><strong>bbackupd</strong></span> creates when running, and which
+                <span class="command"><strong>bbackupctl</strong></span> uses to communicate with it, for
+                example to force a sync or a configuration reload. If this
+                option is omitted, no socket will be created, and
+                <span class="command"><strong>bbackupctl</strong></span> will not function.</p><p>Unix sockets appear within the filesystem on Unix, as a
+                special type of file, and must be created in a directory which
+                exists and to which bbackupd has write access, and bbackupctl
+                has read access. </p><p>On Windows, the path is ignored, and a <em class="glossterm">named
+                pipe</em> is created instead. This does not currently
+                have any security attached, so it can be accessed by any user.
+                Unlike a Unix socket it can also be accessed remotely. Please
+                use this option with extreme caution on Windows, and only on
+                fully trusted networks.</p></dd><dt><span class="glossterm">AutomaticBackup (optional)</span></dt><dd class="glossdef"><p>Enable or disable the client from connecting
+                automatically to the store every
+                <em class="glossterm">UpdateStoreInterval</em> seconds. When
+                enabled (set to <span class="quote">&#8220;<span class="quote">Yes</span>&#8221;</span>), the client is in
+                <em class="glossterm">Lazy Mode</em>. When disabled (set to
+                <span class="quote">&#8220;<span class="quote">No</span>&#8221;</span>), it is in <em class="glossterm">Snapshot
+                Mode</em>. This setting is optional, and the default
+                value is <span class="quote">&#8220;<span class="quote">Yes</span>&#8221;</span>.</p></dd><dt><span class="glossterm">UpdateStoreInterval (required)</span></dt><dd class="glossdef"><p>The approximate time between successive connections to
+                the server, in seconds, when the client is in <em class="glossterm">Lazy
+                Mode</em>. The actual time is randomised slightly to
+                prevent "rush hour" traffic jams on the server, where many
+                clients try to connect at the same time.</p><p>This value is ignored if the client is in
+                <em class="glossterm">Snapshot Mode</em>. However, it is still
+                required. It can be set to zero in this case.</p><p>You will probably need to experiment with the value of
+                this option. A good value to start with is probably 86400
+                seconds, which is one day.</p></dd><dt><span class="glossterm">MinimumFileAge (required)</span></dt><dd class="glossdef"><p>The number of seconds since a file was last modified
+                before it will be backed up. The reason for this is to avoid
+                repeatedly backing up files which are repeatedly changing. A
+                good value is about 3600 seconds (one hour). If set to zero,
+                files which have changed will always be backed up on the next
+                backup run. </p><p>The <em class="glossterm">MaxUploadWait</em> option
+                overrides this option in some circumstances.</p></dd><dt><span class="glossterm">MaxUploadWait (required)</span></dt><dd class="glossdef"><p>The number of seconds since a file was last uploaded
+                before it will be uploaded again, even if it keeps changing.
+                The reason for this is to ensure that files which are
+                continuously modified are eventually uploaded anyway. This
+                should be no less than the value of
+                <em class="glossterm">MinimumFileAge</em>. A good value is about
+                14400 seconds (4 hours).</p></dd><dt><span class="glossterm">MaxFileTimeInFuture (optional)</span></dt><dd class="glossdef"><p>The maximum time that a file's timestamp can be in the
+                future, before it will be backed up anyway. Due to clock
+                synchronisation problems, it is inevitable that you will
+                occasionally see files timestamped in the future. Normally,
+                for files which are dated only slightly in the future, you
+                will want to wait until after the file's date before backing
+                it up. However, for files whose dates are very wrong (more
+                than a few hours) you will normally prefer to back them up
+                immediately.</p><p>A good value is about 7200 seconds (2 hours) to cope
+                with potential problems when moving in and out of daylight
+                saving time, if applicable in your timezone. The default
+                value, if this setting is not provided, is 172800 seconds (2
+                days).</p></dd><dt><span class="glossterm">FileTrackingSizeThreshold (required)</span></dt><dd class="glossdef"><p>The minimum size of files which will be tracked by inode
+                number to detect renames. It is not worth detecting renames of
+                small files, since they are quick to upload again in full, and
+                keeping their inode numbers in memory increases the client's
+                memory usage and slows down searches. Larger files should be
+                tracked to avoid wasting space on the store and long
+                uploads.</p><p>A good value is about 65536 bytes (64 kilobytes).</p></dd><dt><span class="glossterm">DiffingUploadSizeThreshold (required)</span></dt><dd class="glossdef"><p>The minimum size of files which will be compared to the
+                old file on the server, and for which only changes will be
+                uploaded. It is not worth comparing small files, since they
+                are quick to upload again in full, and sending the entire file
+                reduces the risk of data loss if the store is accidentally
+                corrupted. Larger files should have only their differences
+                uploaded to avoid wasting space on the store and long
+                uploads.</p><p>A good value is about 65536 bytes (64 kilobytes).</p></dd><dt><span class="glossterm">MaximumDiffingTime (optional)</span></dt><dd class="glossdef"><p>The maximum time for which the client will attempt to
+                find differences between the current version and the old
+                version in the store, before giving up and uploading the
+                entire file again. Very large files (several gigabytes) may
+                take a very long time to scan for changes, but would also take
+                a very long time to upload again and use a lot of space on the
+                store, so it is normally worth omitting this value. </p><p>Use this option only if, for some bizarre reason, you
+                prefer to upload really large files in full rather than spend
+                a long time scanning them for changes.</p></dd><dt><span class="glossterm">KeepAliveTime (optional)</span></dt><dd class="glossdef"><p>The interval (in seconds) between sending Keep-Alive
+                messages to the server while performing long operations such
+                as finding differences in large files, or scanning large
+                directories. </p><p>These messages ensure that the SSL connection is not
+                closed by the server, or an intervening firewall, due to lack
+                of activity.</p><p>The server will normally wait up to 15 minutes (900
+                seconds) before disconnecting the client, so the value should
+                be given and should be less than 900. Some firewalls may time
+                out inactive connections after 10 or 5 minutes. </p><p>A good value is 300 seconds (5 minutes). You may need to
+                reduce this if you frequently see TLSReadFailed or
+                TLSWriteFailed errors on the client.</p></dd><dt><span class="glossterm">StoreObjectInfoFile (optional)</span></dt><dd class="glossdef"><p>Enables the use of a state file, which stores the
+                client's internal state when the client is not running. This
+                is useful on clients machines which are frequently shut down,
+                for example desktop and laptop computers, because it removes
+                the need for the client to recontact the store and rescan all
+                directories on the first backup run, which may take some time.
+                This feature is somewhat experimental and not well tested.
+                </p><p>This is option is disabled by default, in which case the
+                state is stored in memory only. The value is the path to the
+                state file.</p></dd><dt><span class="glossterm">ExtendedLogging (optional)</span></dt><dd class="glossdef"><p>Enables the connection debugging mode of the client,
+                which writes all commands sent to or received from the server
+                to the system logs. This generates a <span class="emphasis"><em>lot</em></span>
+                of output, so it should only be used when instructed, or when
+                you suspect a connection problem or client-server protocol
+                error (and you know how to interpret the output).</p><p>This is a boolean value, which may be set to
+                <span class="quote">&#8220;<span class="quote">Yes</span>&#8221;</span> or <span class="quote">&#8220;<span class="quote">No</span>&#8221;</span>. The default is of
+                course <span class="quote">&#8220;<span class="quote">No</span>&#8221;</span>.</p></dd><dt><span class="glossterm">ExtendedLogFile (optional, new in 0.11)</span></dt><dd class="glossdef"><p>Enables the same debugging output as
+                <em class="glossterm">ExtendedLogging</em>, but written to a file
+                instead of the system logs. This is useful if you need
+                extended logging, but do not have access to the system logs,
+                for example if you are not the administrator of the
+                computer.</p><p>The value is the path to the file where these logs will
+                be written. If omitted, extended logs will not be written to a
+                file. This is entirely independent of the
+                <em class="glossterm">ExtendedLogging</em> option. It does not
+                make much sense to use both at the same time.</p></dd><dt><span class="glossterm">LogAllFileAccess (optional, new in 0.11)</span></dt><dd class="glossdef"><p>Enables logging of all local file and directory access,
+                file uploads (full and differential), and excluded files. This
+                may be useful if the client is failing to upload a particular
+                file, or crashing while trying to upload it. The logs will be
+                sent to the system log or Windows Event Viewer.</p><p>This generates a <span class="emphasis"><em>lot</em></span>
+		of output, so it should only be used when instructed, or when
+		you suspect that bbackupd is skipping some files and want to
+		know why. Because it is verbose, the messages are hidden by
+		default even if the option is enabled. To see them, you must
+		run bbackupd with at least one -v option.</p><p>This is a boolean value, which may be set to
+                <span class="quote">&#8220;<span class="quote">Yes</span>&#8221;</span> or <span class="quote">&#8220;<span class="quote">No</span>&#8221;</span>. The default is of
+                course <span class="quote">&#8220;<span class="quote">No</span>&#8221;</span>.</p></dd><dt><span class="glossterm">SyncAllowScript (optional)</span></dt><dd class="glossdef"><p>The path to the script or command to run when the client
+                is about to start an automatic backup run, and wishes to know
+                whether it is safe to do so. This is useful for clients which
+                do not always have access to the server, for example laptops
+                and computers on dial-up Internet connections.</p><p>The script should either output the word
+                <span class="quote">&#8220;<span class="quote">now</span>&#8221;</span> if the backup should proceed, or else a
+                number, in seconds, which indicates how long the client should
+                wait before trying to connect again. Any other output will
+                result in an error on the client, and the backup will not
+                run.</p><p>This value is optional, and by default no such script is
+                used.</p></dd></dl></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp67824336"></a>Server Section</h4></div></div></div><p>These options appear within the Server subsection, which is at
+          the root level.</p><div class="glosslist"><dl><dt><span class="glossterm">PidFile</span></dt><dd class="glossdef"><p>This option enables the client to write its processs
+                identifier (PID) to the specified file after starting. The
+                file will be deleted when the client daemon exits for any
+                reason. This is disabled by default, but is recommended
+                whenever you run the client daemon as a daemon (in the
+                background), which is usually the case. This file can be used
+                by scripts to determine whether the daemon is still running,
+                and to send it messages to reload its configuration or to
+                terminate.</p><div class="example"><a name="idp67826896"></a><p class="title"><b>Example 1.3. Example Server Section</b></p><div class="example-contents"><pre class="programlisting">Server
+{
+    PidFile = /var/state/boxbackup/bbackupd.pid
+}</pre></div></div><br class="example-break"></dd></dl></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp67828688"></a>Backup Locations Section</h4></div></div></div><p>This section serves only as a container for all defined backup
+          locations.</p><div class="example"><a name="idp67829712"></a><p class="title"><b>Example 1.4. Example Backup Locations Section</b></p><div class="example-contents"><pre class="programlisting">BackupLocations
+{
+        etc
+        {
+                Path = /etc
+        }
+        home
+        {
+                Path = /home
+                ExcludeDir = /home/shared
+                ExcludeDir = /home/chris/.ccache
+                ExcludeDir = /home/chris/.mozilla/firefox/vvvkq3vp.default/Cache
+        }
+}</pre></div></div><br class="example-break"><p>Each subsection is a backup location. The name of the
+          subsection is the name that will be used on the server. The root
+          directory of the account on the server contains one subdirectory per
+          location. The name should be simple, not containing any spaces or
+          special characters.</p><p>If you do not define any locations, the client will not back
+          up any files!</p><p>It is currently not recommended to back up the root directory
+          of the filesystem on Unix. Box Backup is designed to back up
+          important data and configuration files, not full systems.
+          Nevertheless, nothing prevents you from doing so if you
+          desire.</p><p>On Windows, it is currently not possible to back up files
+          which are open (currently in use), such as open documents in
+          Microsoft Office, and system files such as the registry and the
+          paging file. You will get an error for each open file which the
+          client attempts to back up. Once the file has been closed, it will
+          be backed up normally. System files will always be open, and should
+          be excluded from your backups.</p></div></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pr01.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">License </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Administration</td></tr></table></div></body></html>

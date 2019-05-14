@@ -1,0 +1,257 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 2. Administration</title><link rel="stylesheet" type="text/css" href="../bbdoc.css"><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"><link rel="home" href="index.html" title="Box Backup administrator's guide"><link rel="up" href="index.html" title="Box Backup administrator's guide"><link rel="prev" href="ch01.html" title="Chapter 1. Configuration"><link rel="next" href="apa.html" title="Appendix A. Exception codes"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div id="header"><div id="logo"><img src="../images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle"><img src="../images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle"></div></div><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 2. Administration</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch01.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="apa.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a name="idp67833168"></a>Chapter 2. Administration</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl class="toc"><dt><span class="section"><a href="ch02.html#idp67834320">Regular Maintenance</a></span></dt><dd><dl><dt><span class="section"><a href="ch02.html#idp67835344">Controlling a backup client</a></span></dt><dt><span class="section"><a href="ch02.html#idp67845072">Using bbackupctl to perform snapshots</a></span></dt><dt><span class="section"><a href="ch02.html#idp67848784">Checking storage space used on the server</a></span></dt><dt><span class="section"><a href="ch02.html#idp67854544">Verify and restore files</a></span></dt></dl></dd><dt><span class="section"><a href="ch02.html#idp67903824">Fixing corruptions of store data</a></span></dt><dd><dl><dt><span class="section"><a href="ch02.html#idp67906896">Stop bbackupd</a></span></dt><dt><span class="section"><a href="ch02.html#idp67920976">Are you using RAID on the server?</a></span></dt><dt><span class="section"><a href="ch02.html#idp67922128">Check and fix the account</a></span></dt><dt><span class="section"><a href="ch02.html#idp67925840">Grab any files you need with bbackupquery</a></span></dt><dt><span class="section"><a href="ch02.html#idp67927760">Restart bbackupd</a></span></dt></dl></dd><dt><span class="section"><a href="ch02.html#idp67929168">Troubleshooting</a></span></dt><dd><dl><dt><span class="section"><a href="ch02.html#idp67932752">RaidFile (2/8)</a></span></dt><dt><span class="section"><a href="ch02.html#idp67935440">Common (1/2)</a></span></dt><dt><span class="section"><a href="ch02.html#idp67940816">Server (3/16)</a></span></dt><dt><span class="section"><a href="ch02.html#idp67943504">Connection (7/x)</a></span></dt><dt><span class="section"><a href="ch02.html#idp67948112">Advanced troubleshooting</a></span></dt></dl></dd></dl></div><p>This chapter deals with the dauily running and management of the Box
+    Backup system. It explains most day-to-day tasks.</p><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp67834320"></a>Regular Maintenance</h2></div></div></div><p>The steps involved in maintaining and keeping the backup sets
+      healthy are outlined in this section.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67835344"></a>Controlling a backup client</h3></div></div></div><p>The bbackupctl program sends control commands to the bbackupd
+        daemon. It must be run as the same user as the daemon, and there is no
+        exception for root.</p><p>The command line syntax is:</p><pre class="programlisting">/usr/local/sbin/bbackupctl [-q] [-c config-file] command</pre><p>The -q option reduces the amount of output the program emits,
+        and -c allows an alternative configuration file to be
+        specified.</p><p>Valid commands are:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="bold"><strong>terminate</strong></span></p><p>Stop the bbackupd daemon now (equivalent to kill)</p></li><li class="listitem"><p><span class="bold"><strong>reload</strong></span></p><p>Reload the configuration file (equivalent to kill
+            -HUP)</p></li><li class="listitem"><p><span class="bold"><strong>sync</strong></span></p><p>Connect to the server and synchronise files now</p></li></ul></div><p><span class="bold"><strong>bbackupctl</strong></span> communicates with
+        the server via a UNIX domain socket, specified in bbackupd.conf with
+        the CommandSocket directive. This does not need to be specified, and
+        <span class="bold"><strong>bbackupd</strong></span> will run without the command
+        socket, but in this case bbackupctl will not be able to communicate
+        with the daemon.</p><p>Some platforms cannot check the user id of the connecting
+        process, so this command socket becomes a denial of service security
+        risk. <span class="bold"><strong>bbackupd</strong></span> will warn you when it
+        starts up if this is the case on your platform, and you should
+        consider removing the CommandSocket directive on these
+        platforms.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67845072"></a>Using bbackupctl to perform snapshots</h3></div></div></div><p><span class="bold"><strong>bbackupctl</strong></span>'s main purpose is to
+        implement snapshot based backups, emulating the behaviour of
+        traditional backup software.</p><p>Use bbackupd-config to write a configuration file in snapshot
+        mode, and then run the following command as a cron job.</p><pre class="programlisting">/usr/local/sbin/bbackupctl -q sync</pre><p>This will cause the backup daemon to upload all changed files
+        immediately. <span class="bold"><strong>bbackupctl</strong></span> will exit
+        almost immediately, and will not output anything unless there is an
+        error.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67848784"></a>Checking storage space used on the server</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp67849424"></a>From the client machine</h4></div></div></div><p>bbackupquery can tell you how much space is used on the server
+          for this account. Either use the usage command in interactive mode,
+          or type:</p><pre class="programlisting">/usr/local/sbin/bbackupquery -q usage quit</pre><p>to show the space used as a single command.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp67851472"></a>On the server</h4></div></div></div><p>bbstoreaccounts allows you to query the space used, and change
+          the limits. To display the space used on the server for an account,
+          use:</p><pre class="programlisting">/usr/local/sbin/bbstoreaccounts info 75AB23C</pre><p>To adjust the soft and hard limits on an account, use:</p><pre class="programlisting">/usr/local/sbin/bbstoreaccounts setlimit 75AB23C new-soft-limit new-hard-limit</pre><p>You do not need to restart the server.</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67854544"></a>Verify and restore files</h3></div></div></div><p>Backups are no use unless you can restore them. The bbackupquery
+        utility does this and more.</p><p>You don't provide any login information to it, as it just picks
+        up the data it needs from /etc/box/bbackupd.conf. You should run it as
+        root so it can find everything it needs.</p><p>Full documentation can be found in the <a class="ulink" href="bbackupquery.xml" target="_top">bbackupquery manual page</a>. It follows
+        the model of a command line sftp client quite closely.</p><p>TODO: Link to bbackupquery man-page here.</p><p>On systems where GNU readline is available (by default) it uses
+        that for command line history and editing. Otherwise it falls back to
+        very basic UNIX text entry.</p><p>TODO: Did the readline dependency change to editline?</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp67858128"></a>Using bbackupquery</h4></div></div></div><p>bbackupquery is the tool you use to verify, restore and
+          investigate your backup files with. When invoked, it simply logs
+          into the server using the certificates you have listed in
+          bbackupd.conf.</p><p>After you run bbackupquery, you will see a prompt, allowing
+          you to execute commands. The list (or ls) command lets you view
+          files in the store. It works much like unix ls, but with different
+          options. An example:</p><pre class="programlisting">[pthomsen@host bbackupquery]$ bbackupquery 
+Box Backup Query Tool  v0.10, (c) Ben Summers and contributors 2003-2006
+Using configuration file /etc/box/bbackupd.conf
+Connecting to store...
+Handshake with store...
+Login to store...
+Login complete.
+
+Type "help" for a list of commands.
+
+query &gt; ls
+00000002 -d---- mp3
+00000003 -d---- video
+00000004 -d---- home-pthomsen
+00000005 -d---- root
+query &gt;   </pre><p>The ls commands shows the directories that are backed up. Now
+          we'll take a closer look at the home-pthomsen directory:</p><pre class="programlisting">query &gt; cd home-pthomsen
+query &gt; ls
+00002809 f----- sample.tiff
+0000280a f----- s3.tiff
+0000280b f----- s4.tiff
+0000280d f----- s2.tiff
+0000280e f----- foo.pdf
+0000286c f----- core.28720
+0000339a -d---- .emacs.d
+0000339d -d---- bbackup-contrib
+00003437 f----- calnut.compare.txt
+0000345d f----- DSCN1783.jpg
+0000345e f----- DSCN1782.jpg
+query &gt;</pre><p>The ls command takes the following options;</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="bold"><strong>-r </strong></span>-- recursively list
+              all files</p></li><li class="listitem"><p><span class="bold"><strong>-d</strong></span> -- list deleted
+              files/directories</p></li><li class="listitem"><p><span class="bold"><strong>-o</strong></span> -- list old versions
+              of files/directories</p></li><li class="listitem"><p><span class="bold"><strong>-I</strong></span> -- don't display
+              object ID</p></li><li class="listitem"><p><span class="bold"><strong>-F </strong></span>-- don't display
+              flags</p></li><li class="listitem"><p><span class="bold"><strong>-t </strong></span>-- show file
+              modification time (and attr mod time if has the object has
+              attributes, ~ separated)</p></li><li class="listitem"><p><span class="bold"><strong>-s</strong></span> -- show file size in
+              blocks used on server (only very approximate indication of size
+              locally)</p></li></ul></div><p>The flags displayed from the ls command are as follows:</p><table border="0" summary="Simple list" class="simplelist"><tr><td>f = file</td></tr><tr><td>d = directory</td></tr><tr><td>X = deleted</td></tr><tr><td>o = old version</td></tr><tr><td>R = remove from server as soon as marked deleted or
+            old</td></tr><tr><td>a = has attributes stored in directory record which
+            override attributes in backup file</td></tr></table></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp67885904"></a>Verify backups</h4></div></div></div><p>As with any backup system, you should frequently check that
+          your backups are working properly by comparing them. Box Backup
+          makes this very easy and completely automatic. All you have to do is
+          schedule the <span class="command"><strong>bbackupquery compare</strong></span> command to run
+          regularly, and check its output. You can run the command manually as
+          follows:</p><pre class="programlisting">/usr/local/sbin/bbackupquery "compare -a" quit</pre><p>This command will report all the differences found between the
+          store and the files on disc. It will download everything, so may
+          take a while. You should expect to see some differences on a typical
+          compare, because files which have recently changed are unlikely to
+          have been uploaded yet. It will also tell you how many files have
+          been modified since the last backup run, since these will normally
+          have changed, and such failures are expected.</p><p>You are strongly recommended to add this command as a
+          <span class="command"><strong>cron</strong></span> job, at least once a month, and to check the
+          output for anything suspicious, particularly a large number of
+          compare failures, failures on files that have not been modified, or
+          any error (anything except a compare mismatch) that occurs during
+          the compare operation.</p><p>Consider keeping a record of these messages and comparing them
+          with a future verification.</p><p>If you would like to do a "quick" check which just downloads
+          file checksums and compares against that, then run:</p><pre class="programlisting">/usr/local/sbin/bbackupquery "compare -aq" quit</pre><p>However, this does not check that the file attributes are
+          correct, and since the checksums are generated on the client they
+          may not reflect the data on the server if there is a problem -- the
+          server cannot check the encrypted contents. View this as a quick
+          indication, rather than a definite check that your backup verifies
+          correctly.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp67891280"></a>Restore backups</h4></div></div></div><p>You will need the keys file created when you configured the
+          server. Without it, you cannot restore the files; this is the
+          downside of encrypted backups. However, by keeping the small keys
+          file safe, you indirectly keep your entire backup safe.</p><p>The first step is to recreate the configuration of the backup
+          client. It's probably best to have stored the /etc/box directory
+          with your keys. But if you're recreating it, all you really need is
+          to have got the login infomation correct (ie the certs and
+          keys).</p><p>Don't run bbackupd yet! It will mark all your files as deleted
+          if you do, which is not hugely bad in terms of losing data, just a
+          major inconvenience. (This assumes that you are working from a blank
+          slate. If you want to restore some files to a different location,
+          it's fine to restore while bbackupd is running, just do it outside a
+          backed up directory to make sure it doesn't start uploading the
+          restored files.)</p><p>Type:</p><pre class="programlisting">/usr/local/sbin/bbackupquery</pre><p>to run it in interactive mode.</p><p>Type:</p><pre class="programlisting">list</pre><p>to see a list of the locations stored on the server.</p><p>For each location you want to restore, type:</p><pre class="programlisting">restore name-on-server local-dir-name</pre><p>The directory specified by local-dir-name must not exist yet.
+          If the restore is interrupted for any reason, repeat the above
+          steps, but add the <span class="bold"><strong>-r</strong></span> flag to the
+          restore command to tell it to resume.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp67897680"></a>Retrieving deleted and old files</h4></div></div></div><p>Box Backup makes old versions of files and files you have
+          deleted available, subject to there being enough disc space on the
+          server to hold them.</p><p>This is how to retrieve them using bbackupquery. Future
+          versions will make this far more user-friendly.</p><p>Firstly, run bbackupquery in interactive mode. It behaves in a
+          similar manner to a command line sftp client.</p><pre class="programlisting">/usr/local/sbin/bbackupquery</pre><p>Then navigate to the directory containing the file you want,
+          using list, cd and pwd.</p><pre class="programlisting">query &gt; cd home/profiles/USERNAME</pre><p>List the directory, using the "o" option to list the files
+          available without filtering out everything apart from the current
+          version. (if you want to see deleted files as well, use list
+          -odt)</p><pre class="programlisting">query &gt; list -ot
+00000078 f--o- 2004-01-21T20:17:48 NTUSER.DAT
+00000079 f--o- 2004-01-21T20:17:48 ntuser.dat.LOG
+0000007a f--o- 2004-01-21T17:55:12 ntuser.ini
+0000007b f---- 2004-01-12T15:32:00 ntuser.pol
+0000007c -d--- 1970-01-01T00:00:00 Templates
+00000089 -d--- 1970-01-01T00:00:00 Start Menu
+000000a0 -d--- 1970-01-01T00:00:00 SendTo
+000000a6 -d--- 1970-01-01T00:00:00 Recent
+00000151 -d--- 1970-01-01T00:00:00 PrintHood
+00000152 -d--- 1970-01-01T00:00:00 NetHood
+00000156 -d--- 1970-01-01T00:00:00 My Documents
+0000018d -d--- 1970-01-01T00:00:00 Favorites
+00000215 -d--- 1970-01-01T00:00:00 Desktop
+00000219 -d--- 1970-01-01T00:00:00 Cookies
+0000048b -d--- 1970-01-01T00:00:00 Application Data
+000005da -d--- 1970-01-01T00:00:00 UserData
+0000437e f--o- 2004-01-24T02:45:43 NTUSER.DAT
+0000437f f--o- 2004-01-24T02:45:43 ntuser.dat.LOG
+00004380 f--o- 2004-01-23T17:01:29 ntuser.ini
+00004446 f--o- 2004-01-24T02:45:43 NTUSER.DAT
+00004447 f--o- 2004-01-24T02:45:43 ntuser.dat.LOG
+000045f4 f---- 2004-01-26T15:54:16 NTUSER.DAT
+000045f5 f---- 2004-01-26T15:54:16 ntuser.dat.LOG
+000045f6 f---- 2004-01-26T16:54:31 ntuser.ini</pre><p>(this is a listing from a server which is used as a Samba
+          server for a network of Windows clients.) You now need to fetch the
+          file using it's ID, rather than it's name. The ID is the hex number
+          in the first column. Fetch it like this:</p><pre class="programlisting">query &gt; get -i 0000437e NTUSER.DAT
+Object ID 0000437e fetched successfully.</pre><p>The object is now available on your local machine. You can use
+          lcd to move around, and sh ls to list directories on your local
+          machine.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp67903824"></a>Fixing corruptions of store data</h2></div></div></div><p>This section gives help on what to do if your server has suffered
+      corruption, for example, after an unclean shutdown or other operating
+      system or hardware problem.</p><p>In general, as updates to the store are made in an atomic manner,
+      the most likely result is wasted disc space. However, if really bad
+      things happen, or you believe that there is a lot of wasted space, then
+      these instructions will help to restore your data.</p><p>You know you will need to do something if you get strange errors,
+      and bbackupd attempts to contact the server every 100 seconds or so. Or
+      if one of the discs in your RAID disc set has failed.</p><p>After following these instructions, the end result will be that
+      bbackupquery will be able to see all the files which were stored on your
+      server, and retrieve them. Some of them may be in lost+found directories
+      in the root of the store (or in their original position if they have
+      been moved) but they will all be able to be retrieved.</p><p>After you have retrieved the files you want, bbackupd will upload
+      new versions where necessary, and after about two days, mark any
+      lost+found directories as deleted. Finally, those directories will be
+      removed by the housekeeping process on the server.</p><p>These instructions assume you're working on account 1234. Replace
+      this with the account number that you actually want to check (the one
+      that is experiencing errors). These steps will need to be repeated for
+      all affected accounts.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67906896"></a>Stop bbackupd</h3></div></div></div><p>First, make sure that bbackupd is not running on the client
+        machine for the account you are going to recover. Use
+        <span class="command"><strong>bbackupctl terminate</strong></span> to stop it. This step is not
+        strictly necessary, but is recommended. During any checks on the
+        account, bbackupd will be unable to log in, and after they are
+        complete, the account is marked as changed on the server so bbackupd
+        will perform a complete scan.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67920976"></a>Are you using RAID on the server?</h3></div></div></div><p>The raidfile recovery tools have not been written, and probably
+        will not be, since Box Backup RAID is deprecated. However, when two
+        out of three files are available, the server will successfully allow
+        access to your data, even if it complains a lot in the logs. The best
+        thing to do is to fix the accounts, if necessary, and retrieve any
+        files you need. Then move the old store directories aside (in case you
+        need them) and start afresh with new accounts, and let the clients
+        upload all their data again.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67922128"></a>Check and fix the account</h3></div></div></div><p>First, run the check utility, and see what errors it
+        reports.</p><pre class="programlisting">/usr/local/sbin/bbstoreaccounts check 1234</pre><p>This will take some time, and use a fair bit of memory (about 16
+        bytes per file and directory). If the output looks plausible and
+        reports errors which need fixing, run it again but with the fix
+        flag:</p><pre class="programlisting">/usr/local/sbin/bbstoreaccounts check 1234 fix</pre><p>This will fix any errors, and remove unrecoverable files.
+        Directories will be recreated if necessary.</p><p><span class="bold"><strong>NOTE</strong></span>: The utility may adjust
+        the soft and hard limits on the account to make sure that housekeeping
+        will not remove anything -- check these afterwards.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67925840"></a>Grab any files you need with bbackupquery</h3></div></div></div><p>At this point, you will have a working store. Every file which
+        was on the server, and wasn't corrupt, will be available.</p><p>On the client, use bbackupquery to log in and examine the store.
+        (type help at the prompt for instructions). Retrieve any files you
+        need, paying attention to any lost+found directories in the root
+        directory of the store.</p><p>You can skip this step if you are sure that the client machine
+        is fine -- in this case, bbackupd will bring the store up to
+        date.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67927760"></a>Restart bbackupd</h3></div></div></div><p>Restart bbackupd on the client machine. The store account will
+        be brought up to date, and files in the wrong place will be marked for
+        eventual deletion.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idp67929168"></a>Troubleshooting</h2></div></div></div><p>If you are trying to fix a store after your disc has been
+      corrupted, see <a class="link" href="ch02.html#FixCorruptions">Fixing corruptions of
+      store data</a>.</p><p>Unfortunately, the error messages are not particularly helpful at
+      the moment. This page lists some of the common errors, and the most
+      likely causes of them.</p><p>When an error occurs, you will see a message like 'Exception:
+      RaidFile/OSFileError (2/8)' either on the screen or in your log files.
+      (it is recommended you set up another log file as recommended in the
+      server setup instructions.)</p><p>This error may not be particularly helpful, although some do have
+      extra information about probable causes. To get further information,
+      check the ExceptionCodes.txt file in the root of the distribution. This
+      file is generated by the ./configure script, so you will need to have
+      run that first.</p><p>Some common causes of exceptions are listed below.</p><p>Please email me with any other codes you get, and I will let you
+      know what they mean, and add notes here.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67932752"></a>RaidFile (2/8)</h3></div></div></div><p>This is found either when running bbstoreaccounts or in the
+        bbstored logs.</p><p><span class="bold"><strong>Problem</strong></span>: The directories you
+        specified in the raidfile.conf are not writable by the _bbstored
+        user.</p><p><span class="bold"><strong>Resolution</strong></span>: Change permissions
+        appropriately.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67935440"></a>Common (1/2)</h3></div></div></div><p>This usually occurs when the configuration files can't be
+        opened.</p><p><span class="bold"><strong>Problem</strong></span>: You created your
+        configurations in non-standard locations, and the programs cannot find
+        them.</p><p><span class="bold"><strong>Resolution</strong></span>: Explicitly specify
+        configuration file locations to daemons and programs. For
+        example</p><pre class="programlisting">/usr/local/sbin/bbstored /some/other/dir/bbstored.config /usr/local/sbin/bbackupquery -c /some/other/dir/bbackupd.config</pre><p>(daemons specify the name as the first argument, utility
+        programs with the -c option).</p><p><span class="bold"><strong>Problem</strong></span>: bbstored can't find
+        the raidfile.conf file specified in bbstored.conf.</p><p><span class="bold"><strong>Resolution</strong></span>: Edit bbstored.conf
+        to point to the correct location of this additional configuration
+        file.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67940816"></a>Server (3/16)</h3></div></div></div><p>The server can't listen for connections on the IP address
+        specified when you configured it.</p><p><span class="bold"><strong>Problem</strong></span>: This probably means
+        you've specified the wrong hostname to bbstored-config -- maybe your
+        server is behind a NAT firewall?</p><p><span class="bold"><strong>Resolution</strong></span>: Edit bbstored.conf
+        and correct the ListenAddresses line. You should replace the server
+        address with the IP address of your machine.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67943504"></a>Connection (7/x)</h3></div></div></div><p>These errors all relate to connections failing -- you may see
+        them during operation if there are network failures or other problems
+        between the client and server. The backup system will recover from
+        them automatically.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idp67944528"></a>Connection (7/30) - SSL problems</h4></div></div></div><p>Log snippet from client side:</p><pre class="programlisting">bbackupd[1904]: Opening connection to server xxxx.xxx...
+bbackupd[1904]: SSL err during Connect: error:xxxxxxxx:rsa routines:RSA_padding_check_PKCS1_type_1:block type is not 01
+bbackupd[1904]: SSL err during Connect: error:xxxxxxxx:rsa routines:RSA_EAY_PUBLIC_DECRYPT:padding check failed
+bbackupd[1904]: SSL err during Connect: error:xxxxxxxx:asn1 encoding routines:ASN1_verify:EVP lib
+bbackupd[1904]: SSL err during Connect: error:xxxxxxxx:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed
+bbackupd[1904]: TRACE: Exception thrown: ConnectionException(Conn_TLSHandshakeFailed) at SocketStreamTLS.cpp(237)
+bbackupd[1904]: Exception caught (7/30), reset state and waiting to retry...</pre><p>And from the server:</p><pre class="programlisting">bbstored[19291]: Incoming connection from xx.xxx.xx.xxx port xxxxx (handling in child xxxxx)
+bbstored[21588]: SSL err during Accept: error:xxxxxxxx:SSL routines:SSL3_READ_BYTES:tlsv1 alert decrypt error
+bbstored[21588]: in server child, exception Connection TLSHandshakeFailed (7/30) -- terminating child</pre><p><span class="bold"><strong>Solution</strong></span>: Create a new CA on
+          the server side and re-generate the client certificate. Re-creating
+          the client certificate request is not necessary.</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idp67948112"></a>Advanced troubleshooting</h3></div></div></div><p>If this really doesn't help, then using the DEBUG builds of the
+        system will give you much more information -- a more descriptive
+        exception message and the file and line number where the error
+        occurred.</p><p>For example, if you are having problems with bbstoreaccounts,
+        build the debug version with:</p><pre class="programlisting">cd boxbackup-0.0
+cd bin/bbstoreaccounts
+make</pre><p>Within the module directories, make defaults to building the
+        debug version. At the top level, it defaults to release.</p><p>This will build an executable in debug/bin/bbstoreaccounts which
+        you can then use instead of the release version. It will give far more
+        useful error messages.</p><p>When you get an error message, use the file and line number to
+        locate where the error occurs in the code. There will be comments
+        around that line to explain why the exception happened.</p><p>If you are using a debug version of a daemon, these extended
+        messages are found in the log files.</p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch01.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="apa.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 1. Configuration </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Appendix A. Exception codes</td></tr></table></div></body></html>
