@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+	<title>Box Backup</title>
+	<link rel="stylesheet" href="bbstyles.css" type="text/css" />
+</head>
+<body>
+	<div align="center">
+		<div id="header">
+			<div id="logo">
+				<img src="images/bblogo.png" alt="logo" height="65" width="331" border="0" vspace="5" align="middle" /> <img src="images/stepahead.png" alt="a step ahead in data security" width="182" height="11" hspace="10" vspace="20" border="0" align="middle" /></div>
+			</div>
+		</div>
+		<div id="page">
+
+			<h1>Box Backup</h1>
+
+			<p>An open source, completely automatic on-line backup system for UNIX.
+				<ul>
+					<li>All backed up data is stored on the server in files on a filesystem -- no tape or archive devices are used
+					<li>The server is trusted only to make files available when they are required -- all data is encrypted
+					<li>A backup daemon runs on systems to be backed up, and copies encrypted data to the server when it notices changes
+					<li>Only changes within files are sent to the server, just like rsync
+					<li>Old versions of files on the server are stored as changes from the current version
+					<li>Behaves like tape -- old versions and deleted files are available
+					<li>Choice of backup behaviour, optimised for document or server backup
+					<li>Designed to be easy and cheap to run a server. Portable implementation, and RAID implemented in
+					userland for reliability without complex server setup or expensive hardware. (optional)
+				</ul>
+			</p>
+
+			<h2>Implementation</h2>
+
+			<p>There are three main elements</p>
+
+			<ul>
+				<li>bbstored -- backup store server.
+				<li>bbackupd -- backup client daemon, which scans for changes and uploads them to the server.
+				<li>bbackupquery -- backup query and restore tool.
+			</ul>
+
+			<p>Running the store server is a multi-step process, but the backup client is easy.</p>
+
+			<p>TLS (SSL revised) is used to encrypt connections, and more importantly, to authenticate servers
+			and clients with both server and client side certificates. Scripts are provided to generate and
+			manage these certificates.</p>
+
+			<p>Stored files are encrypted using AES for file data and Blowfish for
+			metadata. This does mean that the one thing you do need to back up
+			off-site and look after is a 1k file containing your keys -- the data
+			on the server is useless without it. But it never changes, so that's OK.</p>
+
+			<h2>Download</h2>
+
+			<p>The latest stable release is 0.11.1.</p>
+
+			<p>See <a href="https://github.com/boxbackup/boxbackup/wiki/Installation">the wiki</a> for the latest compilation and installation instructions.</p>
+
+			<ul>
+				<li><b>Stable Release: 0.11.1</b><br />
+				<tt><a href="https://github.com/boxbackup/boxbackup/releases/download/0.11.1/boxbackup-0.11.1.tgz">boxbackup-0.11.1.tgz</a></tt><br />
+				(1.8 MB, SHA256 1328b010477259c4767276dbfebab6580e883336cc9d25696c39991b09cc6d32, released 2 August 2011)</li>
+			</ul>
+
+			<h3>Code Signatures</h3>
+
+			<p>New releases are signed by Chris Wilson (key ID 31197862).
+			<a href="http://pgp.mit.edu:11371/pks/lookup?op=get&search=0x31197862">Download
+			the key</a> or fetch with:</p>
+
+			<pre>
+			gpg --recv-keys --keyserver pgp.mit.edu 31197862
+			</pre>
+
+			<p>Source code is <a href="https://github.com/boxbackup/boxbackup">available on GitHub</a>.</p>
+
+			<h2>Documentation</h2>
+
+			<p>The <a href="https://github.com/boxbackup/boxbackup/wiki">wiki</a> contains user contributed
+documentation. Please use it for up to date information about Box Backup.
+			</p>
+			
+
+			<h2>Mailing list</h2>
+
+			<p>Please join the project mailing list, boxbackup@boxbackup.org, for announcements of new versions
+and discussion of the system. Join at the <a href="http://lists.boxbackup.org/cgi-bin/mailman/listinfo/boxbackup">sign up page</a>.</p>
+			
+			<footer>Web design by <a href="http://www.wpdfd.com">Joe Gillespie</a></footer>
+		</div>
+	</div>
+</body>
+</html>
